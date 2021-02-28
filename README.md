@@ -12,6 +12,8 @@ Then with the help of [MonoInjector](https://github.com/Michidu/MonoInjector)
 
 `MonoInjector.exe -t RustClient.exe -d <the path on disk to your DLL, without using krill> -n nWTAsSXPzaMv -c wbcOKNDbFMC6 -m InBQcEpqrHWw`
 
+In order for the cheat to work with the menu, you need to drop the .assets file into the root folder of the game!!!
+ 
 ## Credits:
 
 Code developer:   [HE](https://vk.com/id439734993 "i fuck your mom")

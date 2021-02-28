@@ -8,7 +8,7 @@ Then with the help of [MonoInjector](https://github.com/Michidu/MonoInjector)
 #### Example:
 `MonoInjector.exe --target RustClient.exe --dll <the path on disk to your DLL, without using krill> --namespace nWTAsSXPzaMv --class wbcOKNDbFMC6 --method InBQcEpqrHWw`
 
-####Or
+#### Or
 
 `MonoInjector.exe -t RustClient.exe -d <the path on disk to your DLL, without using krill> -n nWTAsSXPzaMv -c wbcOKNDbFMC6 -m InBQcEpqrHWw`
 

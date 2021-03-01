@@ -1,35 +1,35 @@
-﻿using System.Reflection;
-
+﻿using System;
+using System.Reflection;
 using UnityEngine;
 
-internal class aimbots
-{
-    public static BasePlayer GetTarget()
-    {
-        BasePlayer result = null;
-        new Vector2(Screen.width / 2f, Screen.height / 2f);
-        float num = 1000f;
-        foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
-        {
-            if (!(basePlayer == null) && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !basePlayer.IsDead())
-            {
-                Vector3 vector = MainCamera.mainCamera.WorldToScreenPoint(basePlayer.transform.position);
-                new Vector2(vector.x, Screen.height - vector.y);
-                float num2 = Mathf.Abs(Vector2.Distance(new Vector2(Screen.width / 2, Screen.height / 2), new Vector2(vector.x, Screen.height - vector.y)));
-                if (num2 <= 360 && num2 < num && basePlayer.IsAlive())
-                {
-                    num = num2;
-                    result = basePlayer;
-                }
-            }
-        }
-        return result;
-    }
+	internal class aimbots
+	{
+		public static BasePlayer GetTarget()
+		{
+			BasePlayer result = null;
+			new Vector2((float)Screen.width / 2f, (float)Screen.height / 2f);
+			float num = 1000f;
+			foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
+			{
+				if (!(basePlayer == null) && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !basePlayer.IsDead())
+				{
+					Vector3 vector = MainCamera.mainCamera.WorldToScreenPoint(basePlayer.transform.position);
+					new Vector2(vector.x, (float)Screen.height - vector.y);
+					float num2 = Mathf.Abs(Vector2.Distance(new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2)), new Vector2(vector.x, (float)Screen.height - vector.y)));
+					if (num2 <= 360 && num2 < num && basePlayer.IsAlive())
+					{
+						num = num2;
+						result = basePlayer;
+					}
+				}
+			}
+			return result;
+		}
 
     public static float BulletDrop(Vector3 v1, Vector3 v2, float BulletSpeed)
     {
         float num = Vector3.Distance(v1, v2);
-        bool flag = num < 0.001;
+        bool flag = (double)num < 0.001;
         bool flag2 = flag;
         float result;
         if (flag2)
@@ -39,45 +39,45 @@ internal class aimbots
         else
         {
             float num2 = num / BulletSpeed;
-            result = (float)(4.90500020980835 * num2 * num2);
+            result = (float)(4.90500020980835 * (double)num2 * (double)num2);
         }
         return result;
     }
 
     // Token: 0x06000086 RID: 134 RVA: 0x00007BF0 File Offset: 0x00005DF0
     public static void Aim()
-    {
-        Vector3 posTargetPlayer = aimbots.GetEnemyVector();
-        if (!(posTargetPlayer == Vector3.zero))
-        {
-            Quaternion quaternion = Quaternion.LookRotation(posTargetPlayer - MainCamera.mainCamera.transform.position, Vector3.right);
-            float num = quaternion.eulerAngles.x;
-            num = ((MainCamera.mainCamera.transform.position.y < posTargetPlayer.y) ? (-360f + num) : num);
-            num = Mathf.Clamp(num, -89f, 89f);
-            LocalPlayer.Entity.input.SetViewVars(new Vector3(num, quaternion.eulerAngles.y, 0f));
-        }
-    }
+		{
+			Vector3 posTargetPlayer = aimbots.GetEnemyVector();
+			if (!(posTargetPlayer == Vector3.zero))
+			{
+				Quaternion quaternion = Quaternion.LookRotation(posTargetPlayer - MainCamera.mainCamera.transform.position, Vector3.right);
+				float num = quaternion.eulerAngles.x;
+				num = ((MainCamera.mainCamera.transform.position.y < posTargetPlayer.y) ? (-360f + num) : num);
+				num = Mathf.Clamp(num, -89f, 89f);
+				LocalPlayer.Entity.input.SetViewVars(new Vector3(num, quaternion.eulerAngles.y, 0f));
+			}
+		}
 
-    // Token: 0x06000087 RID: 135 RVA: 0x00007CA0 File Offset: 0x00005EA0
-    public static Vector3 GetBonePosition(Model playerModel, string boneName)
-    {
-        Vector3 zero = Vector3.zero;
-        Vector3 result;
-        if (playerModel == null)
-        {
-            result = zero;
-        }
-        else if (boneName == "headCenter")
-        {
-            result = new Vector3(playerModel.headBone.position.x, playerModel.eyeBone.position.y, playerModel.headBone.position.z);
-        }
-        else
-        {
-            result = playerModel.FindBone(boneName).position;
-        }
-        return result;
-    }
-    private static readonly FieldInfo fieldInfo_1 = typeof(PlayerModel).GetField("velocity", BindingFlags.Instance | BindingFlags.NonPublic);
+		// Token: 0x06000087 RID: 135 RVA: 0x00007CA0 File Offset: 0x00005EA0
+		public static Vector3 GetBonePosition(Model playerModel, string boneName)
+		{
+			Vector3 zero = Vector3.zero;
+			Vector3 result;
+			if (playerModel == null)
+			{
+				result = zero;
+			}
+			else if (boneName == "headCenter")
+			{
+				result = new Vector3(playerModel.headBone.position.x, playerModel.eyeBone.position.y, playerModel.headBone.position.z);
+			}
+			else
+			{
+				result = playerModel.FindBone(boneName).position;
+			}
+			return result;
+		}
+	private static FieldInfo fieldInfo_1 = typeof(PlayerModel).GetField("velocity", BindingFlags.Instance | BindingFlags.NonPublic);
     public static bool IsVisible(Vector3 vector3_0)
     {
         Vector3 a = MainCamera.mainCamera.transform.position - vector3_0;
@@ -106,16 +106,13 @@ internal class aimbots
             return 375f;
         }
         else
-        {
             held_entity = LocalPlayer.Entity.GetHeldEntity();
-        }
-
         string itemname = held_entity.GetOwnerItemDefinition().shortname;
         float speed = 300f;
         if (held_entity.GetComponent<BaseProjectile>() != null)
         {
             Vector2 centerScreen = new Vector2(Screen.width / 2f, Screen.height / 2f);
-            foreach (BasePlayer player in BasePlayer.VisiblePlayerList)
+            foreach (BasePlayer player in BasePlayer.visiblePlayerList)
             {
 
                 if (player != null && !player.IsDead() && !player.IsSleeping())
@@ -123,9 +120,7 @@ internal class aimbots
                     int distanceFromCenter = (int)(Vector2.Distance(MainCamera.mainCamera.WorldToScreenPoint(player.model.headBone.transform.position), centerScreen));
                     Vector3 onScreen = player.transform.position - MainCamera.mainCamera.transform.position;
                     if (!player.IsLocalPlayer() && player.health > 0f && Vector3.Dot(MainCamera.mainCamera.transform.TransformDirection(Vector3.forward), onScreen) > 0)
-                    {
-                        ;
-                    }
+                       ;
                 }
 
                 if (player != null && !player.IsDead() && !player.IsSleeping())
@@ -442,19 +437,9 @@ internal class aimbots
                         {
 
                             if (pwm.isSilencer)
-                            {
                                 speed = speed * 0.75f;
-                            }
 
-                            if (pwm.isMuzzleBoost)
-                            {
-                                speed = speed * 0.9f;
-                            }
-
-                            if (pwm.isMuzzleBrake)
-                            {
-                                speed = speed * 0.8f;
-                            }
+                          
                         }
                         string ammo_type = held_entity.GetComponent<BaseProjectile>().primaryMagazine.ammoType.displayName.english;
                         switch (ammo_type)
@@ -629,13 +614,13 @@ internal class aimbots
         return result;
     }
     public static Vector3 GetEnemyVector()
-    {
+	{
         Vector3 result = Vector3.zero;
-        Vector3 vector = new Vector3(Screen.width / 2, Screen.height / 2);
+        Vector3 vector = new Vector3((float)(Screen.width / 2), (float)(Screen.height / 2));
         float num = 300f;
-        foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+        foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
         {
-            bool flag = basePlayer != null && basePlayer.health > 0f && !basePlayer.IsSleeping() && !CFG.Setting.friendsList.Contains(basePlayer.userID) && !basePlayer.IsLocalPlayer();
+            bool flag = basePlayer != null && basePlayer.health > 0f && !basePlayer.IsSleeping() && !friend.friendsList.Contains(basePlayer.userID) && !basePlayer.IsLocalPlayer();
             if (flag)
             {
                 Vector3 vector2 = aimbots.GetBonePosition(basePlayer.GetModel(), "Head") + new Vector3(0f, 0.05f, 0f);
@@ -644,19 +629,19 @@ internal class aimbots
                 {
                     Vector3 vector3 = MainCamera.mainCamera.WorldToScreenPoint(vector2);
                     Vector3 vector4 = MainCamera.mainCamera.WorldToScreenPoint(aimbots.GetBonePosition(basePlayer.GetModel(), "headCenter") + new Vector3(0f, 0.05f, 0f));
-                    Vector2 vector5 = new Vector2(vector3.x, Screen.height - vector3.y);
-                    float num2 = Mathf.Abs(Vector2.Distance(new Vector2(Screen.width / 2, Screen.height / 2), new Vector2(vector4.x, Screen.height - vector4.y)));
-                    bool flag3 = num2 <= CFG.Setting.fov && num2 < num && basePlayer.IsAlive();
+                    Vector2 vector5 = new Vector2(vector3.x, (float)Screen.height - vector3.y);
+                    float num2 = Mathf.Abs(Vector2.Distance(new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2)), new Vector2(vector4.x, (float)Screen.height - vector4.y)));
+                    bool flag3 = num2 <= menu.fov && num2 < num && basePlayer.IsAlive();
                     if (flag3)
                     {
                         result = vector2;
-                        Item activeItem = LocalPlayer.Entity.Belt.GetActiveItem();
+                        Item activeItem = LocalPlayer.Entity.belt.GetActiveItem();
                         bool flag4 = activeItem == null || (!activeItem.info.shortname.Contains("bow") && !activeItem.info.shortname.Contains("smg.") && !activeItem.info.shortname.Contains("pistol.") && !activeItem.info.shortname.Contains("lmg.") && !activeItem.info.shortname.Contains("rifle"));
                         if (flag4)
                         {
                         }
                         result.y += aimbots.BulletDrop(LocalPlayer.Entity.transform.position, vector2, aimbots.brmrds9r96ti6mj6ors());
-
+                      
 
                     }
                     num = num2;
@@ -665,6 +650,6 @@ internal class aimbots
         }
         return result;
     }
-    private static readonly FieldInfo fieldInfo_11 = typeof(PlayerModel).GetField("velocity", BindingFlags.Instance | BindingFlags.NonPublic);
+    private static FieldInfo fieldInfo_11 = typeof(PlayerModel).GetField("velocity", BindingFlags.Instance | BindingFlags.NonPublic);
     public static bool hhh;
-}
+	}

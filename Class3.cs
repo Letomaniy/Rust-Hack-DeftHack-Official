@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
-
 using UnityEngine;
+
 // Line drawing routine originally courtesy of Linusmartensson:
 // http://forum.unity3d.com/threads/71979-Drawing-lines-in-the-editor
 //
@@ -103,7 +103,7 @@ public static class Drawing
         GL.PopMatrix();
     }
 
-
+    
     // Token: 0x06000138 RID: 312 RVA: 0x0001141C File Offset: 0x0000F61C
     public static void DrawCircle1(Color Col, Vector2 Center, float Radius)
     {
@@ -134,11 +134,9 @@ public static class Drawing
     public static Material DrawMaterial = new Material(Shader.Find("Hidden/Internal-Colored"));
     public static void DrawCircle(Vector2 center, float radius, Color color, float width, int segmentsPerQuarter)
     {
-
+        
         DrawCircle(center, radius, color, width, false, segmentsPerQuarter);
     }
-
-
 
     public static void DrawCircle(Vector2 center, float radius, Color color, float width, bool antiAlias, int segmentsPerQuarter)
     {

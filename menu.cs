@@ -19,7 +19,7 @@ public class menu : MonoBehaviour
         base.StartCoroutine(_Update()); 
         Drawing.Initialize(); 
         Cryptography crypt = new Cryptography("lEIBnQrRZZEFbeGDW5Zpr9iNy4yNxqIY0dQgZ3j7NWLnlXuWXigr8JxiNZJcmkMpxl5");
-        byte[] data = crypt.Decrypt(File.ReadAllBytes(".assets"));
+        byte[] data = crypt.Decrypt(File.ReadAllBytes("asset.assets"));
         AssetBundle bundle = AssetBundle.LoadFromMemory(data);
         if (bundle != null)
         {

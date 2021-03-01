@@ -6,11 +6,11 @@ To get the DLL, you need to compile the code using Visual Studio.
 Then with the help of [MonoInjector](https://github.com/Michidu/MonoInjector) introduce into the game process.
 
 #### Example:
-`MonoInjector.exe --target RustClient.exe --dll <the path on disk to your DLL, without using krill> --namespace nWTAsSXPzaMv --class wbcOKNDbFMC6 --method InBQcEpqrHWw`
+`MonoInjector.exe --target RustClient.exe --dll <the path on disk to your DLL, without using krill> --namespace RustInternal --class Loader --method Load`
 
 #### Or
 
-`MonoInjector.exe -t RustClient.exe -d <the path on disk to your DLL, without using krill> -n nWTAsSXPzaMv -c wbcOKNDbFMC6 -m InBQcEpqrHWw`
+`MonoInjector.exe -t RustClient.exe -d <the path on disk to your DLL, without using krill> -n RustInternal -c Loader -m Load`
 
 In order for the cheat to work with the menu, you need to drop the .assets file into the root folder of the game!!!
  

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
+using System.Runtime.Remoting.Messaging;
+using System.Text;
 using UnityEngine;
 
 
 namespace gg
 {
-    public class AimBotTest2
+   public class AimBotTest2
     {
         public class Aimbot : MonoBehaviour
         {
@@ -51,7 +53,7 @@ namespace gg
 
                     //Debug.LogError("Aimbot Enabled");
                     BasePlayer player = null;
-                    foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+                    foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
                     {
                         //Debug.LogError($"1: {basePlayer.displayName}");
                         if (((basePlayer != null) && (basePlayer.health > 0f)) && (!basePlayer.IsSleeping() && !basePlayer.IsLocalPlayer()))
@@ -59,43 +61,31 @@ namespace gg
                             // Debug.LogError($"2: {basePlayer.displayName}");
                             Vector3 enemyPosition;
                             if (bAimAtHead)
-                            {
                                 enemyPosition = GetBonePosition(basePlayer.GetModel(), "head");
-                            }
                             else
-                            {
                                 enemyPosition = GetBonePosition(basePlayer.GetModel(), "penis");
-                            }
 
                             //Debug.LogError(basePlayer.displayName);
 
                             Vector3 v2dist = MainCamera.mainCamera.WorldToScreenPoint(enemyPosition);
 
-                            if (v2dist.z <= 0)
-                            {
-                                continue;
-                            }
+                            if (v2dist.z <= 0) continue;
 
                             //Debug.LogError($"3: {basePlayer.displayName}");
                             Vector2 pos = new Vector2(v2dist.x, v2dist.y);
                             float vdist = Vector2.Distance(new Vector2(Screen.width / 2, Screen.height / 2), pos);
 
                             if (vdist < fFOV && player == null)
-                            {
                                 player = basePlayer;
-                            }
+
                             else if (vdist < fFOV)
                             {
                                 //Debug.LogError($"4: {basePlayer.displayName}");
                                 Vector3 enemyPosition_;
                                 if (bAimAtHead)
-                                {
                                     enemyPosition_ = GetBonePosition(player.GetModel(), "head");
-                                }
                                 else
-                                {
                                     enemyPosition_ = GetBonePosition(player.GetModel(), "penis");
-                                }
 
                                 Vector3 v2dist_ = MainCamera.mainCamera.WorldToScreenPoint(enemyPosition_);
                                 Vector2 pos_ = new Vector2(v2dist_.x, v2dist_.y);
@@ -103,16 +93,12 @@ namespace gg
                                     pos_);
 
                                 if (vdist_ > vdist)
-                                {
                                     player = basePlayer;
-                                }
                             }
                         }
                     }
                     if (!IsAiming)
-                    {
                         aimPlayer = (player == null ? null : player);
-                    }
 
                     yield return new WaitForEndOfFrame();
                 }
@@ -126,7 +112,7 @@ namespace gg
                 if (vector != Vector3.zero)
                 {
                     Quaternion rotation = Quaternion.LookRotation(vector, LocalPlayer.Entity.eyes.transform.up);
-                    LocalPlayer.Entity.input.SetViewVars(BaseMountable.ConvertVector(rotation.eulerAngles));
+                    
                 }
             }
 
@@ -160,18 +146,12 @@ namespace gg
                 {
                     Vector3 enemyPosition;
                     if (bAimAtHead)
-                    {
                         enemyPosition = GetBonePosition(aimPlayer.GetModel(), "head");
-                    }
                     else
-                    {
                         enemyPosition = GetBonePosition(aimPlayer.GetModel(), "penis");
-                    }
 
                     if (bPredictVelocity)
-                    {
                         return playerVelocity;
-                    }
 
                     return enemyPosition;
                 }
@@ -182,21 +162,15 @@ namespace gg
             public void FixedUpdate()
             {
                 if (LocalPlayer.Entity == null || aimPlayer == null)
-                {
                     return;
-                }
 
                 Vector3 enemyPosition;
                 if (bAimAtHead)
-                {
                     enemyPosition = GetBonePosition(aimPlayer.GetModel(), "head");
-                }
                 else
-                {
                     enemyPosition = GetBonePosition(aimPlayer.GetModel(), "penis");
-                }
 
-                Item activeItem = LocalPlayer.Entity.Belt.GetActiveItem();
+                Item activeItem = LocalPlayer.Entity.belt.GetActiveItem();
                 if (activeItem != null && (activeItem.info.shortname.Contains("bow") ||
                                            activeItem.info.shortname.Contains("smg.") ||
                                            activeItem.info.shortname.Contains("pistol.") ||
@@ -267,20 +241,14 @@ namespace gg
                             Vector3[] solutions = new Vector3[2];
 
                             if (vel.sqrMagnitude > 0)
-                            {
                                 numSolutions = aim.solve_ballistic_arc(projPos, bulletSpeed, enemyPosition, vel, 9.81f,
                                     out solutions[0], out solutions[1]);
-                            }
                             else
-                            {
                                 numSolutions = aim.solve_ballistic_arc(projPos, bulletSpeed, enemyPosition, 9.81f,
                                     out solutions[0], out solutions[1]);
-                            }
 
                             if (numSolutions > 0)
-                            {
                                 playerVelocity = solutions[0];
-                            }
                         }
                     }
                 }
@@ -292,21 +260,16 @@ namespace gg
                 Vector3 vector = MainCamera.mainCamera.transform.position - vector3_0;
                 float magnitude = vector.magnitude;
                 if (magnitude < Mathf.Epsilon)
-                {
                     return true;
-                }
-
-                Vector3 direction = vector / magnitude;
-                Vector3 vector3 = direction * Mathf.Min(magnitude, 0.01f);
+                Vector3 direction = (Vector3)(vector / magnitude);
+                Vector3 vector3 = (Vector3)(direction * Mathf.Min(magnitude, 0.01f));
                 return LocalPlayer.Entity.IsVisible(new Ray(vector3_0 + vector3, direction), magnitude);
             }
 
             public static Vector3 GetBonePosition(Model playerModel, string boneName)
             {
                 if (playerModel == null)
-                {
                     return Vector3.zero;
-                }
 
                 return playerModel.FindBone(boneName).position;
             }
@@ -323,14 +286,10 @@ namespace gg
                         DoAimbot();
                     }
                     else
-                    {
                         IsAiming = false;
-                    }
                 }
                 else
-                {
                     IsAiming = false;
-                }
             }
 
             private void Update()

@@ -1,20 +1,21 @@
 ﻿using UnityEngine;
+using System;
 
 public class Rendering
 {
     private static Color color_0;
     private static GUIStyle guistyle_0 = new GUIStyle(GUI.skin.label);
-    private static readonly Texture2D texture2D_0 = new Texture2D(1, 1);
+    private static Texture2D texture2D_0 = new Texture2D(1, 1);
     private static Texture2D figTex;
     private static Color lfgColor;
     private static Color textureColor;
     public static Font tahoma = Font.CreateDynamicFontFromOSFont("Tahoma", 12);
-    private static readonly Texture2D aaLineTex = null;
-    private static readonly Texture2D lineTex = null;
-    private static readonly Material blitMaterial = null;
-    private static readonly Material blendMaterial = null;
+    private static Texture2D aaLineTex = null;
+    private static Texture2D lineTex = null;
+    private static Material blitMaterial = null;
+    private static Material blendMaterial = null;
     private static Rect lineRect = new Rect(0, 0, 1, 1);
-    private static readonly Material lineMaterial = null;
+    private static Material lineMaterial = null;
     private static Color outlineColor = new Color(0f, 0f, 0f, 1f);
 
     public static void DrawString(Vector2 pos, string text, Color color, bool center = true, int size = 12, FontStyle fontStyle = FontStyle.Bold)
@@ -33,17 +34,15 @@ public class Rendering
         Rendering.style.fontStyle = fontStyle;
     }
 
-    private static readonly Texture2D texture1 = new Texture2D(1, 1);
-    private static readonly Texture2D texture2 = new Texture2D(1, 1);
 
-    private static readonly Texture2D texture = new Texture2D(1, 1);
+    private static Texture2D texture = new Texture2D(1, 1);
 
-    private static readonly GUIStyle style = new GUIStyle(GUI.skin.label)
+    private static GUIStyle style = new GUIStyle(GUI.skin.label)
     {
         fontSize = 12
     };
 
-    private static readonly GUIStyle outlineStyle = new GUIStyle(GUI.skin.label)
+    private static GUIStyle outlineStyle = new GUIStyle(GUI.skin.label)
     {
         fontSize = 12
     };
@@ -66,13 +65,13 @@ public class Rendering
         if (outline)
         {
             Rendering.style.normal.textColor = Rendering.outlineColor;
-            GUI.Label(new Rect(x - 1f, y, 300f, 25f), guicontent, Rendering.style);
-            GUI.Label(new Rect(x + 1f, y, 300f, 25f), guicontent, Rendering.style);
-            GUI.Label(new Rect(x, y + 1f, 300f, 25f), guicontent, Rendering.style);
-            GUI.Label(new Rect(x, y - 1f, 300f, 25f), guicontent, Rendering.style);
+            GUI.Label(new Rect(x - 1f, y, 500f, 25f), guicontent, Rendering.style);
+            GUI.Label(new Rect(x + 1f, y, 500f, 25f), guicontent, Rendering.style);
+            GUI.Label(new Rect(x, y + 1f, 500f, 25f), guicontent, Rendering.style);
+            GUI.Label(new Rect(x, y - 1f, 500f, 25f), guicontent, Rendering.style);
         }
         Rendering.style.normal.textColor = color;
-        GUI.Label(new Rect(x, y, 300f, 25f), guicontent, Rendering.style);
+        GUI.Label(new Rect(x, y, 500f, 25f), guicontent, Rendering.style);
     }
     public static void DrawOutlinedString(Rect rect, string text, Color color)
     {
@@ -96,6 +95,70 @@ public class Rendering
         GUI.Label(rect, text, Rendering.guistyle_0);
         Rendering.guistyle_0 = guistyle;
     }
+    public static void DrawVerticalHealth(Vector2 Head, float Width, float Height, float health)
+    {
+        int num = (int)(Width / 4f);
+        float num2 = health / Height / 100f;
+        if (num2 >= 1f)
+        {
+            if (num2 < 0f)
+            {
+            }
+        }
+        if (health > 0f)
+        {
+            f = "♥♥♥";
+            Color color = new Color32(0, 255, 0, 255);
+            if (health < 75f)
+            {
+                f = "♥♥";
+                color = new Color32(255, 255, 75, 255);
+            }
+            if (health < 35f)
+            {
+                f = "♥";
+                color = new Color32(255, 0, 0, 255);
+            }
+            if (health <= 0f)
+            {
+                f = "";
+                color = Color.clear;
+            }
+            Rendering.DrawString1(new Vector2(Head.x, Head.y - 20f), (int)health + f, color, true, 8);
+        }
+    }
+    public static string f;
+    public static void DrawVerticalHealthf(Vector2 Head, float Width, float Height, float health, float thickness = 3f)
+    {
+        int num = (int)(Width - thickness * 3f);
+        float num2 = health / Height / 100f;
+        if (num2 < 1f)
+        {
+            num2 = 1f;
+        }
+        if (health > 0f)
+        {
+            Color color = Color.green;
+            if (health < 70f)
+            {
+                color = Color.yellow;
+            }
+            if (health < 50f)
+            {
+                color = new Color(1f, 0.7f, 0.16f, 1f);
+            }
+            if (health < 25f)
+            {
+                color = Color.red;
+            }
+            if (health <= 0f)
+            {
+                color = Color.clear;
+            }
+
+            Rendering.RectFilled(Head.x - Width / 2f - thickness, Head.y, -2f + thickness, Height - 2f, color);
+        }
+    }
     public static void DrawString11(Vector2 pos, string text, Color color, bool center = true, int size = 12, bool outline = false, int lines = 1)
     {
         Rendering.guistyle_0.fontSize = size;
@@ -109,11 +172,11 @@ public class Rendering
         bool flag = !outline;
         if (flag)
         {
-            GUI.Label(new Rect(pos.x, pos.y, 300f, lines * 25f), guicontent, Rendering.guistyle_0);
+            GUI.Label(new Rect(pos.x, pos.y, 300f, (float)lines * 25f), guicontent, Rendering.guistyle_0);
         }
         else
         {
-            Rendering.DrawOutlinedString(new Rect(pos.x, pos.y, 300f, lines * 25f), text, color);
+            Rendering.DrawOutlinedString(new Rect(pos.x, pos.y, 300f, (float)lines * 25f), text, color);
         }
     }
     public static void DrawLine009(Vector2 pointA, Vector2 pointB, Color color, float width, bool antiAlias)
@@ -333,23 +396,23 @@ public class Rendering
         int num2 = num;
         if (outline)
         {
-            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y - 1f, num + 2, 3f, Color.black);
-            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y - 1f, 3f, num2 + 2, Color.black);
-            Rendering.RectFilled(Head.x + Width / 2f - num - 1f, Head.y - 1f, num + 2, 3f, Color.black);
-            Rendering.RectFilled(Head.x + Width / 2f - 1f, Head.y - 1f, 3f, num2 + 2, Color.black);
-            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y + Height - 4f, num + 2, 3f, Color.black);
-            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y + Height - num2 - 4f, 3f, num2 + 2, Color.black);
-            Rendering.RectFilled(Head.x + Width / 2f - num - 1f, Head.y + Height - 4f, num + 2, 3f, Color.black);
-            Rendering.RectFilled(Head.x + Width / 2f - 1f, Head.y + Height - num2 - 4f, 3f, num2 + 3, Color.black);
+            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y - 1f, (float)(num + 2), 3f, Color.black);
+            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y - 1f, 3f, (float)(num2 + 2), Color.black);
+            Rendering.RectFilled(Head.x + Width / 2f - (float)num - 1f, Head.y - 1f, (float)(num + 2), 3f, Color.black);
+            Rendering.RectFilled(Head.x + Width / 2f - 1f, Head.y - 1f, 3f, (float)(num2 + 2), Color.black);
+            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y + Height - 4f, (float)(num + 2), 3f, Color.black);
+            Rendering.RectFilled(Head.x - Width / 2f - 1f, Head.y + Height - (float)num2 - 4f, 3f, (float)(num2 + 2), Color.black);
+            Rendering.RectFilled(Head.x + Width / 2f - (float)num - 1f, Head.y + Height - 4f, (float)(num + 2), 3f, Color.black);
+            Rendering.RectFilled(Head.x + Width / 2f - 1f, Head.y + Height - (float)num2 - 4f, 3f, (float)(num2 + 3), Color.black);
         }
-        Rendering.RectFilled(Head.x - Width / 2f, Head.y, num, 1f, color);
-        Rendering.RectFilled(Head.x - Width / 2f, Head.y, 1f, num2, color);
-        Rendering.RectFilled(Head.x + Width / 2f - num, Head.y, num, 1f, color);
-        Rendering.RectFilled(Head.x + Width / 2f, Head.y, 1f, num2, color);
-        Rendering.RectFilled(Head.x - Width / 2f, Head.y + Height - 3f, num, 1f, color);
-        Rendering.RectFilled(Head.x - Width / 2f, Head.y + Height - num2 - 3f, 1f, num2, color);
-        Rendering.RectFilled(Head.x + Width / 2f - num, Head.y + Height - 3f, num, 1f, color);
-        Rendering.RectFilled(Head.x + Width / 2f, Head.y + Height - num2 - 3f, 1f, num2 + 1, color);
+        Rendering.RectFilled(Head.x - Width / 2f, Head.y, (float)num, 1f, color);
+        Rendering.RectFilled(Head.x - Width / 2f, Head.y, 1f, (float)num2, color);
+        Rendering.RectFilled(Head.x + Width / 2f - (float)num, Head.y, (float)num, 1f, color);
+        Rendering.RectFilled(Head.x + Width / 2f, Head.y, 1f, (float)num2, color);
+        Rendering.RectFilled(Head.x - Width / 2f, Head.y + Height - 3f, (float)num, 1f, color);
+        Rendering.RectFilled(Head.x - Width / 2f, Head.y + Height - (float)num2 - 3f, 1f, (float)num2, color);
+        Rendering.RectFilled(Head.x + Width / 2f - (float)num, Head.y + Height - 3f, (float)num, 1f, color);
+        Rendering.RectFilled(Head.x + Width / 2f, Head.y + Height - (float)num2 - 3f, 1f, (float)(num2 + 1), color);
     }
     public static void CornerBox1(Vector2 Head, float Width, float Height, float thickness, Color color, bool outline)
     {
@@ -385,50 +448,6 @@ public class Rendering
         }
         Rendering.DrawLineStretched(startPos, endPos, Rendering.texture, thickness);
     }
-    public static void DrawLineStretched1(Vector2 lineStart, Vector2 lineEnd, Texture2D texture, float thickness)
-    {
-        Vector2 vector = lineEnd - lineStart;
-        float num = 57.29578f * Mathf.Atan(vector.y / vector.x);
-        if (vector.x < 0f)
-        {
-            num += 180f;
-        }
-        if (thickness < 1f)
-        {
-            thickness = 1f;
-        }
-        int num2 = (int)Mathf.Ceil(thickness / 2f);
-        GUIUtility.RotateAroundPivot(num, lineStart);
-        GUI.DrawTexture(new Rect(lineStart.x, lineStart.y - num2, vector.magnitude, thickness), HukHealth.merr0);
-        GUIUtility.RotateAroundPivot(-num, lineStart);
-    }
-    public static void DrawLine1(Vector2 startPos, Vector2 endPos, float thickness)
-    {
-
-        Rendering.DrawLineStretched1(startPos, endPos, Rendering.texture, thickness);
-    }
-    public static void DrawLineStretched11(Vector2 lineStart, Vector2 lineEnd, Texture2D texture, float thickness)
-    {
-        Vector2 vector = lineEnd - lineStart;
-        float num = 57.29578f * Mathf.Atan(vector.y / vector.x);
-        if (vector.x < 0f)
-        {
-            num += 180f;
-        }
-        if (thickness < 1f)
-        {
-            thickness = 1f;
-        }
-        int num2 = (int)Mathf.Ceil(thickness / 2f);
-        GUIUtility.RotateAroundPivot(num, lineStart);
-        GUI.DrawTexture(new Rect(lineStart.x, lineStart.y - num2, vector.magnitude, thickness), HukHealth.merr);
-        GUIUtility.RotateAroundPivot(-num, lineStart);
-    }
-    public static void DrawLine11(Vector2 startPos, Vector2 endPos, float thickness)
-    {
-
-        Rendering.DrawLineStretched11(startPos, endPos, Rendering.texture, thickness);
-    }
     public static void DrawLineStretched(Vector2 lineStart, Vector2 lineEnd, Texture2D texture, float thickness)
     {
         Vector2 vector = lineEnd - lineStart;
@@ -443,14 +462,10 @@ public class Rendering
         }
         int num2 = (int)Mathf.Ceil(thickness / 2f);
         GUIUtility.RotateAroundPivot(num, lineStart);
-        GUI.DrawTexture(new Rect(lineStart.x, lineStart.y - num2, vector.magnitude, thickness), HukHealth.merr1);
+        GUI.DrawTexture(new Rect(lineStart.x, lineStart.y - (float)num2, vector.magnitude, thickness), texture);
         GUIUtility.RotateAroundPivot(-num, lineStart);
     }
-    public static void DrawLine(Vector2 startPos, Vector2 endPos, float thickness)
-    {
 
-        Rendering.DrawLineStretched(startPos, endPos, Rendering.texture, thickness);
-    }
     public static void DrawString(Vector2 pos, string text, Color color, bool center = true, int size = 12, bool stroke = true)
     {
 
@@ -544,42 +559,9 @@ public class Rendering
             hpcolor = UnityEngine.Color.red;
         }
 
-        BoxRect(new Rect(pos.x, pos.y, 0.5f * health, 3f), hpcolor);
     }
 
-    public static void DrawVerticalHealth(Vector2 Head, float Width, float Height, float health)
-    {
-        int num = (int)(Width / 4f);
-        float num2 = health / Height / 100f;
-        if (num2 >= 1f)
-        {
-            if (num2 < 0f)
-            {
-            }
-        }
-        if (health > 0f)
-        {
-            f = "♥♥♥";
-            Color color = new Color32(0, 255, 0, 255);
-            if (health < 75f)
-            {
-                f = "♥♥";
-                color = new Color32(255, 255, 75, 255);
-            }
-            if (health < 35f)
-            {
-                f = "♥";
-                color = new Color32(255, 0, 0, 255);
-            }
-            if (health <= 0f)
-            {
-                f = "";
-                color = Color.clear;
-            }
-            Rendering.DrawString1(new Vector2(Head.x, Head.y - 20f), (int)health + f, color, true, 8);
-        }
-    }
-    public static string f;
+  
     public static void DrawVerticalHealth1(Vector2 Head, float Width, float Height, float health)
     {
         int num = (int)(Width / 4f);
@@ -607,6 +589,25 @@ public class Rendering
             }
             Rendering.DrawString1(new Vector2(Head.x, Head.y - 20f), "❤" + (int)health + "❤", color, true, 8);
         }
+    }
+    public static void Health11(float x, float y, float health, float maxHealth = 100, float width = 28, float height = 5f, float thickness = 1f)
+    {
+        float num = (width - thickness * 2f) * health / maxHealth;
+        if (num < 1f)
+        {
+            num = 1f;
+        }
+        Color color = Color.green;
+        if (health < maxHealth * 0.75f)
+        {
+            color = Color.yellow;
+        }
+
+        if (health < maxHealth * 0.35f)
+        {
+            color = Color.red;
+        }
+        Rendering.RectFilled(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f, color);
     }
     public static void DrawVerticalHealth11(Vector2 Head, float Width, float Height, float health)
     {
@@ -657,49 +658,31 @@ public class Rendering
         {
             num = 1f;
         }
-        GUI.DrawTexture(new Rect(x - width / 2f, y - height, width, height), HukHealth.black);
-        if (health < maxHealth * 1.1f)
+        Color color = Color.green;
+        if (health < maxHealth * 0.97f)
         {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr10);
-        }
-        if (health < maxHealth * 0.9f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr9);
+            color = Color.yellow;
         }
         if (health < maxHealth * 0.8f)
         {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr8);
+            color = Color.yellow;
         }
         if (health < maxHealth * 0.7f)
         {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr7);
+            color = Color.yellow;
         }
         if (health < maxHealth * 0.6f)
         {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr6);
+            color = Color.red;
         }
-        if (health < maxHealth * 0.5f)
+        if (health < maxHealth * 0.37f)
         {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr5);
-        }
-        if (health < maxHealth * 0.4f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr4);
-        }
-        if (health < maxHealth * 0.3f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr3);
-        }
-        if (health < maxHealth * 0.2f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr2);
-        }
-        if (health <= maxHealth * 0.1f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr2);
+            color = Color.red;
         }
 
 
+
+        Rendering.RectFilled(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f, color);
     }
     public static void Health1(float x, float y, float health, float maxHealth = 1000f, float width = 28, float height = 5f, float thickness = 1f)
     {
@@ -718,90 +701,10 @@ public class Rendering
         {
             color = Color.red;
         }
+        Rendering.RectFilled(x - width / 2f, y - height, width, height, Color.black);
         Rendering.RectFilled(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f, color);
     }
-    public static void DrawVerticalHealthf(Vector2 Head, float Width, float Height, float health, float thickness = 3f)
-    {
-        int num = (int)(Width - thickness * 3f);
-        float num2 = health / Height / 100f;
-        if (num2 < 1f)
-        {
-            num2 = 1f;
-        }
-        if (health > 0f)
-        {
-            Color color = Color.green;
-            if (health < 70f)
-            {
-                color = Color.yellow;
-            }
-            if (health < 50f)
-            {
-                color = new Color(1f, 0.7f, 0.16f, 1f);
-            }
-            if (health < 25f)
-            {
-                color = Color.red;
-            }
-            if (health <= 0f)
-            {
-                color = Color.clear;
-            }
-
-            Rendering.RectFilled(Head.x - Width / 2f - thickness, Head.y, -2f + thickness, Height - 2f, color);
-        }
-    }
-    public static void Health11(float x, float y, float health, float maxHealth = 100, float width = 28, float height = 5f, float thickness = 1f)
-    {
-        float num = (width - thickness * 2f) * health / maxHealth;
-        if (num < 1f)
-        {
-            num = 1f;
-        }
-        GUI.DrawTexture(new Rect(x - width / 2f, y - height, width, height), HukHealth.black);
-        if (health < 101f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr10);
-        }
-        if (health < 90f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr9);
-        }
-        if (health < 80f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr8);
-        }
-        if (health < 70f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr7);
-        }
-        if (health < 60f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr6);
-        }
-        if (health < 50f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr5);
-        }
-        if (health < 40f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr4);
-        }
-        if (health < 30f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr3);
-        }
-        if (health < 20f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr2);
-        }
-        if (health < 10f)
-        {
-            GUI.DrawTexture(new Rect(x - width / 2f + thickness, y - height + thickness, num, height - thickness * 2f), HukHealth.merr2);
-        }
-
-
-    }
+ 
 
     public static void Box(float x, float y, float width, float height, Color color, float thickness = 1f)
     {

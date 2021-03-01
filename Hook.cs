@@ -1,13 +1,12 @@
 ﻿using System;
+using UnityEngine;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-using UnityEngine;
-
-internal class DumbHook
+class DumbHook
 {
 
-    private readonly byte[] original;
+    private byte[] original;
 
     public MethodInfo OriginalMethod { get; private set; }
     public MethodInfo HookMethod { get; private set; }
@@ -33,22 +32,14 @@ internal class DumbHook
 
         original = new byte[orig.Length];
         original = orig;
-        if (nameOrig == "OnPointerEnter")
-        {
-            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
-        }
-        if (nameOrig == "Movement_Walking")
-        {
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState) }, null));
 
-        }
         if (nameOrig == "TraceAll")
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
-        if (nameOrig == "Movement_Noclip")
+        if (nameOrig == "DoHit")
         {
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState), typeof(float) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState), typeof(float) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState), typeof(float) }, null));
+            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(HitTest), typeof(Vector3), typeof(Vector3) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(HitTest), typeof(Vector3), typeof(Vector3) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(HitTest), typeof(Vector3), typeof(Vector3) }, null));
         }
 
         if (nameOrig == "GetMinSpeed")
@@ -56,22 +47,17 @@ internal class DumbHook
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
 
-        if (nameOrig == "OnSkinChanged")
-        {
-            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
-        }
-        if (nameOrig == "GetAssemblies")
-        {
-
-            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
-        }
         if (nameOrig == "OnRequestUserInformation")
         {
             Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(Network.Message) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(Network.Message) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(Network.Message) }, null));
         }
-        if (nameOrig == "DoControls")
+        if (nameOrig == "OnLand")
         {
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null));
+            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
+        }
+        if (nameOrig == "OnPointerClick")
+        {
+            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
 
         if (nameOrig == "BuildAttackMessage")
@@ -82,18 +68,23 @@ internal class DumbHook
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
-
+        if (nameOrig == "DoAttack" && Type.Equals(typeOrig, typeof(BaseProjectile)))
+        {
+            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
+        }
         if (nameOrig == "GetAimCone")
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
-        if (nameOrig == "UpdateCamera")
+
+        if (nameOrig == "SetTimedAction")
         {
-
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Camera) }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Camera) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Camera) }, null));
-
+            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
-
+        if (nameOrig == "StartLoading")
+        {
+            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null));
+        }
 
         if (nameOrig == "GetIndexedSpreadScalar")
         {
@@ -127,7 +118,7 @@ internal class DumbHook
         }
         if (nameOrig == "SendClientTick")
         {
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null));
+            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(PlayerTick) }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(PlayerTick) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(PlayerTick) }, null));
         }
         if (nameOrig == "GetSpeed")
         {
@@ -147,7 +138,7 @@ internal class DumbHook
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
-        if (nameOrig == "noclip")
+        if (nameOrig == "debugcamera")
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
@@ -155,8 +146,11 @@ internal class DumbHook
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
-
         if (nameOrig == "CanHoldItems")
+        {
+            Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
+        }
+        if (nameOrig == "OnPointerEnter")
         {
             Init(typeOrig.GetMethod(nameOrig), typeHook.GetMethod(nameHook), typeOrigNew.GetMethod(nameOrigNew));
         }
@@ -168,8 +162,15 @@ internal class DumbHook
         {
             Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(HitInfo) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(HitInfo) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.Public, null, new Type[] { typeof(HitInfo) }, null));
         }
+        if (nameOrig == "Movement_Noclip")
+        {
+            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState) }, null));
+        }
 
-
+        if (nameOrig == "Movement_Walking")
+        {
+            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState), typeof(float) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState), typeof(float) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(InputState), typeof(ModelState), typeof(float) }, null));
+        }
 
         if (nameOrig == "CreateOrUpdateEntity")
         {
@@ -195,10 +196,7 @@ internal class DumbHook
         {
             Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null));
         }
-        if (nameOrig == "CreateProjectile" && Type.Equals(typeOrig, typeof(Projectile)))
-        {
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null));
-        }
+
         if (nameOrig == "CreateProjectile" && Type.Equals(typeOrig, typeof(BaseMelee)))
         {
             Init(typeOrig.GetMethod(nameOrig, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null), typeHook.GetMethod(nameHook, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(Vector3), typeof(Vector3), typeof(Vector3) }, null));
@@ -249,24 +247,17 @@ internal class DumbHook
         {
             Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null));
         }
-        if (nameOrig == "StartAttackCooldown")
-        {
-            Init(typeOrig.GetMethod(nameOrig, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(float) }, null), typeHook.GetMethod(nameHook, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(float) }, null), typeOrigNew.GetMethod(nameOrigNew, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(float) }, null));
-        }
+
     }
 
 
     public void Init(MethodInfo orig, MethodInfo hook, MethodInfo orignew)
     {
         if (MethodInfo.Equals(orig, null))
-        {
             throw new ArgumentException("Original method is null");
-        }
 
         if (MethodInfo.Equals(hook, null))
-        {
             throw new ArgumentException("Hook method is null");
-        }
 
         //  RuntimeHelpers.PrepareMethod(orig.MethodHandle);
         //  RuntimeHelpers.PrepareMethod(hook.MethodHandle);
@@ -277,19 +268,18 @@ internal class DumbHook
         OriginalNew = orignew;
     }
 
-    public unsafe void Hook()
+    unsafe public void Hook()
     {
         if (MethodInfo.Equals(OriginalMethod, null) || MethodInfo.Equals(HookMethod, null))
-        {
             throw new ArgumentException("Hook has to be properly Init'd before use");
-        }
 
         IntPtr functionOriginal = OriginalMethod.MethodHandle.GetFunctionPointer();
         IntPtr functionHook = HookMethod.MethodHandle.GetFunctionPointer();
         IntPtr functionTrampoline = OriginalNew.MethodHandle.GetFunctionPointer();
 
+        uint oldProt;
 
-        Import.VirtualProtect(functionTrampoline, (uint)original.Length + 12, 0x40, out uint oldProt);
+        Import.VirtualProtect(functionTrampoline, (uint)original.Length + 12, 0x40, out oldProt);
         {
             byte* ptr = (byte*)functionTrampoline;
 
@@ -322,15 +312,16 @@ internal class DumbHook
 
     }
 
-    public unsafe void Unhook()
+    unsafe public void Unhook()
     {
 
         IntPtr functionOriginal = OriginalMethod.MethodHandle.GetFunctionPointer();
         IntPtr functionHook = HookMethod.MethodHandle.GetFunctionPointer();
         IntPtr functionTrampoline = OriginalNew.MethodHandle.GetFunctionPointer();
 
+        uint oldProt;
 
-        Import.VirtualProtect(functionOriginal, 12, 0x40, out uint oldProt);
+        Import.VirtualProtect(functionOriginal, 12, 0x40, out oldProt);
         {
             byte* ptr = (byte*)functionOriginal;
             for (int x = 0; x < original.Length; x++)
@@ -348,7 +339,7 @@ internal class DumbHook
         internal static extern bool VirtualProtect(IntPtr address, uint size, uint newProtect, out uint oldProtect);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern IntPtr VirtualAlloc(uint lpAddress, uint dwSize, AllocationType lAllocationType, MemoryProtection flProtect);
+        internal static extern IntPtr VirtualAlloc(UInt32 lpAddress, UInt32 dwSize, AllocationType lAllocationType, MemoryProtection flProtect);
 
         [Flags]
         public enum AllocationType

@@ -1,44 +1,34 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Security.Cryptography;
-using System.Threading;
-
 using UnityEngine;
+using static gg.AimBotTest2;
 
-namespace nWTAsSXPzaMv
+namespace RustInternal
 {
-    public class wbcOKNDbFMC6
+    public class Loader
     {
-        public static GameObject gameObject; 
-        public static void InBQcEpqrHWw()
-        {  
-            gameObject = new GameObject(string.Empty, new Type[]
-            { 
-                typeof(HACK),
-                typeof(radar2D),
-                typeof(ff),
-                typeof(melee),
-                typeof(AutoFarm2),
-                typeof(AUTO),
-                typeof(HukHealth),
-                typeof(HukTexture),
-                typeof(Players),
-                typeof(friend),
-                typeof(companent),
-                typeof(ESP),
-                typeof(menu),
-                typeof(hack2),
-                typeof(ccc),
-                typeof(gavno),
+        private static GameObject gameObject;
 
-            })
-            {
-                hideFlags = HideFlags.HideAndDontSave
-            };
 
-            UnityEngine.Object.DontDestroyOnLoad(gameObject);
-        } 
+        public static void Load()
+        {
+			Loader.gameObject = new GameObject();
+			Loader.gameObject.AddComponent<ff>();
+			Loader.gameObject.AddComponent<radar2D>();
+			Loader.gameObject.AddComponent<melee>();
+			Loader.gameObject.AddComponent<AutoFarm2>();
+			Loader.gameObject.AddComponent<AUTO>();
+			Loader.gameObject.AddComponent<Players>();
+			Loader.gameObject.AddComponent<friend>();
+			Loader.gameObject.AddComponent<companent>();
+			Loader.gameObject.AddComponent<ESP>();
+			Loader.gameObject.AddComponent<HukTexture>();
+			Loader.gameObject.AddComponent<menu>();
+			Loader.gameObject.AddComponent<ggg>();
+			Loader.gameObject.AddComponent<HACK>();
+			Loader.gameObject.AddComponent<hack2>();
+			UnityEngine.Object.DontDestroyOnLoad(Loader.gameObject);
+			
+           
+        }
     }
 }

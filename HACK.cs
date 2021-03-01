@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-using Facepunch;
-using Facepunch.Steamworks;
-
-using Network;
-
-using ProtoBuf;
-
 using UnityEngine;
+using ProtoBuf;
+using System.Collections;
 using UnityEngine.Rendering;
+using Network;
+using System.Runtime.InteropServices;
+using Facepunch;
+using System.IO;
+
 public class HACK : MonoBehaviour
 {
 
@@ -22,17 +18,121 @@ public class HACK : MonoBehaviour
         return MainCamera.mainCamera.WorldToScreenPoint(position);
     }
     public static string string_1;
+    private IEnumerator newsilentmeleefarm()
+    {
+        for (; ; )
+        {
+            try
+            {
+                if (LocalPlayer.Entity != null && BaseEntityEx.IsValid(LocalPlayer.Entity) && CFG.Misc.ouioiu && global::BasePlayer.visiblePlayerList != null)
+                {
+                    Vector3 vector = LocalPlayer.Entity.eyes.position;
+                    HeldEntity heldEntity = LocalPlayer.Entity.GetHeldEntity();
+                    if (heldEntity != null)
+                    {
+                        BaseEntity baseEntity = null;
+                        BaseEntity baseEntity2 = null;
+                        float num = float.MaxValue;
+                        float num2 = float.MaxValue;
+                        bool flag = false;
+                        int itemid = heldEntity.GetItem().info.itemid;
+                        if (itemid == -1506397857 || itemid == 1711033574 || itemid == -1583967946 || itemid == -1252059217 || itemid == -262590403 || itemid == 1104520648 || itemid == 963906841)
+                        {
+                            flag = true;
+                        } foreach (TreeEntity b in companent.trees)
+                        {
+                            BaseEntity baseEntity3 = b as BaseEntity;
+                            if (!(baseEntity3 == null) && BaseEntityEx.IsValid(baseEntity3) && global::BasePlayer.visiblePlayerList != null)
+                            {
+                                if (flag)
+                                {
+
+                                    {
+                                        float num3 = Vector3.Distance(vector, baseEntity3.transform.position);
+                                        if (num3 <= 5f && num3 < num)
+                                        {
+                                            baseEntity = baseEntity3;
+                                            num = num3;
+                                        }
+
+                                        else if (baseEntity3 is TreeEntity)
+                                        {
+                                            Vector3 position = baseEntity3.transform.position;
+                                            position.y = vector.y;
+                                            float num4 = Vector3.Distance(vector, position);
+                                            if (num4 <= 3.5f && num4 < num2)
+                                            {
+                                                baseEntity2 = baseEntity3;
+                                                num2 = num4;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (baseEntity2 != null)
+                            {
+                                Vector3 vector4;
+                                RaycastHit raycastHit;
+                                if (baseEntity != null)
+                                {
+                                    Vector3 vector3 = baseEntity2.transform.position - baseEntity.transform.position;
+                                    vector3.y = 0f;
+                                    vector3.Normalize();
+                                    vector = baseEntity.transform.position - vector3;
+                                    vector4 = baseEntity.transform.position;
+                                }
+                                else if (GamePhysics.Trace(new Ray(LocalPlayer.Entity.eyes.position, (baseEntity2.transform.position - LocalPlayer.Entity.eyes.position).normalized), 0f, out raycastHit, 15f, 1101212417, 0))
+                                {
+                                    vector4 = raycastHit.point;
+                                }
+                                else
+                                {
+                                    vector4 = baseEntity2.transform.position;
+                                }
+                                this.silent(vector, vector4, baseEntity2.net.ID, heldEntity);
+                            }
+                        }
+                    }
+                } }
+            catch (Exception)
+            {
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private void silent(Vector3 A_1, Vector3 A_2, uint A_3, HeldEntity A_4)
+    {
+        AttackEntity attackEntity = A_4 as AttackEntity;
+        bool flag = attackEntity == null;
+        if (!flag)
+        {
+            bool flag2 = Time.time - this.float_0 < attackEntity.repeatDelay;
+            if (!flag2)
+            {
+                Ray ray = new Ray(A_1, (A_2 - A_1).normalized);
+                using (PlayerAttack playerAttack = Pool.Get<PlayerAttack>())
+                {
+                    using (Attack attack = Pool.Get<Attack>())
+                    {
+                        playerAttack.attack = attack;
+                        playerAttack.attack.hitID = A_3;
+                        playerAttack.attack.hitPositionWorld = A_2;
+                        playerAttack.attack.hitNormalWorld = ray.direction;
+                        playerAttack.attack.pointStart = A_1;
+                        playerAttack.attack.pointEnd = A_2;
+                        attackEntity.ServerRPC("PlayerAttack", playerAttack,null,null,null,null);
+                    }
+                }
+                this.float_0 = Time.time;
+            }
+        }
 
 
-
-
-
-
-
-
+    }
     private void OnGUI()
     {
-        if (CFG.Setting.ZALYPA && UnityEngine.Input.GetKeyDown(KeyCode.L))
+        if (CFG.Misc.ZALYPA && UnityEngine.Input.GetKeyDown(KeyCode.L))
         {
             biglootdrop();
         }
@@ -49,7 +149,7 @@ public class HACK : MonoBehaviour
         bool flag22 = localplayer == null;
         if (flag22)
         {
-            foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+            foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
             {
                 bool flag2 = basePlayer.IsLocalPlayer();
                 if (flag2)
@@ -58,26 +158,16 @@ public class HACK : MonoBehaviour
                 }
             }
         }
-        bool flag = localheli == null;
-        if (flag)
-        {
-            foreach (BaseHelicopter basePlayer in companent.heli1)
-            {
-
-                localheli = basePlayer;
-
-            }
-        }
     }
     public void biglootdrop()
     {
         if (LocalPlayer.Entity != null && BaseEntityEx.IsValid(LocalPlayer.Entity) && LocalPlayer.Entity.inventory != null)
         {
-            base.StartCoroutine(biggerboobs(LocalPlayer.Entity.inventory));
+            base.StartCoroutine(this.biggerboobs(LocalPlayer.Entity.inventory));
         }
     }
     private bool u0014;
-    private readonly WaitForSeconds u001D = new WaitForSeconds(0.4f);
+    private WaitForSeconds u001D = new WaitForSeconds(0.400f);
 
     private IEnumerator u001A(ItemContainer A_1)
     {
@@ -87,13 +177,13 @@ public class HACK : MonoBehaviour
         {
             for (int i = 1; i <= item.amount; i++)
             {
-                LocalPlayer.ItemCommandEx<int>(item.uid, "drop", CFG.Setting.ZALYPA ? 1 : 0);
-                yield return u001D;
+                LocalPlayer.ItemCommandEx(item.uid, "drop", 1,null,null);
+                yield return this.u001D;
             }
         }
         Facepunch.Pool.Free<List<Item>>(ref list);
 
-        u0014 = false;
+        this.u0014 = false;
         yield break;
 
     }
@@ -101,642 +191,70 @@ public class HACK : MonoBehaviour
     {
         if (A_1.containerBelt != null)
         {
-            u0014 = true;
-            base.StartCoroutine(u001A(A_1.containerBelt));
+            this.u0014 = true;
+            base.StartCoroutine(this.u001A(A_1.containerBelt));
         }
-        while (u0014)
+        while (this.u0014)
 
         {
-            yield return u001D;
+            yield return this.u001D;
         }
         if (A_1.containerMain != null)
 
         {
-            u0014 = true;
-            base.StartCoroutine(u001A(A_1.containerMain));
+            this.u0014 = true;
+            base.StartCoroutine(this.u001A(A_1.containerMain));
         }
-        while (u0014)
+        while (this.u0014)
 
         {
-            yield return u001D;
+            yield return this.u001D;
         }
         if (A_1.containerWear != null)
 
         {
-            u0014 = true;
-            base.StartCoroutine(u001A(A_1.containerWear));
+            this.u0014 = true;
+            base.StartCoroutine(this.u001A(A_1.containerWear));
         }
-        while (u0014)
+        while (this.u0014)
 
         {
-            yield return u001D;
+            yield return this.u001D;
         }
         if (A_1.loot != null && A_1.loot.containers.Count > 0)
 
         {
             foreach (ItemContainer itemContainer in A_1.loot.containers)
             {
-                u0014 = true;
-                base.StartCoroutine(u001A(itemContainer));
-                while (u0014)
+                this.u0014 = true;
+                base.StartCoroutine(this.u001A(itemContainer));
+                while (this.u0014)
                 {
-                    yield return u001D;
+                    yield return this.u001D;
                 }
             }
         }
         yield break;
     }
-    public static string targetp = "Захват цели [C]";
-    private readonly float distance; private float float_0;
-    private IEnumerator hoook()
-    {
-        bool debugcam = false;
-        bool debugcam11 = false;
-        bool aimwhilesprinting = false;
-        bool noaimcone = false;
-        bool asaaa = false;
-        bool shotgunspread = false;
-        float oldswimshit = 0f;
-        float oldshit = 0f;
-        float oldshit2 = 0f;
-        while (true)
-        {
-            try
-            {
-                bool flag = false;
-                bool flag2 = false;
-                bool flag3 = false;
-                bool flag4 = false;
-                if (HACK.localplayer != null)
-                {
-                    if (CFG.Setting.debug)
-                    {
-                        if (!debugcam11)
-                        {
-                            debug.Hook();
-                            debugcam11 = true;
-                        }
-                    }
-                    else
-                    {
-                        if (debugcam11)
-                        {
-                            debug.Unhook();
-                            debugcam11 = false;
-                        }
-                    }
-                    if ((CFG.Setting.cahh || CFG.Setting.qewqefdsf || CFG.Setting.BulletDropPrediction || CFG.Setting.dfertwdf))
-                    {
-                        boredasf1.Hook();
-                    }
-                    if (CFG.Setting.hghtrhf)
-                    {
-                        if (!debugcam)
-                        {
-                            boredaaaasf1.Hook();
-                            debugcam = true;
-                        }
-                    }
-                    else if (debugcam)
-                    {
-                        boredaaaasf1.Unhook();
-                        debugcam = false;
-                    }
-                    if (CFG.Setting.eeeeeeeee)
-                    {
-                        if (!aimwhilesprinting)
-                        {
-                            canaim.Hook();
-                            canaim1.Hook();
-                            aimwhilesprinting = true;
-                        }
-                    }
-                    else if (aimwhilesprinting)
-                    {
-                        canaim.Unhook();
-                        canaim1.Unhook();
-                        aimwhilesprinting = false;
-                    }
 
-                    if (CFG.Setting.podgs)
-                    {
-                        if (oldshit2 == 0f)
-                        {
-                            oldshit2 = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
-                        }
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit2 / 2f;
-                    }
-                    else if (oldshit2 != 0f)
-                    {
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit2;
-                    }
-                    if (CFG.Setting.nnnn)
-                    {
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().SetPrivateField("sprintForced", true);
-                    }
-                    if (CFG.Setting.cdddeee && !noaimcone)
-                    {
-                        aimcone.Hook();
-                        noaimcone = true;
-                    }
-                    if (CFG.Setting.sfwewwww && !shotgunspread)
-                    {
-                        shotgunspread1.Hook();
-                        shotgunspread = true;
-                    }
-                    if (CFG.Setting.dfdswe)
-                    {
-                        if (!flag4)
-                        {
-                            canAttack.Hook();
-                            flag4 = true;
-                        }
-                    }
-                    else if (flag4)
-                    {
-                        canAttack.Unhook();
-                        flag4 = false;
-                    }
-                    if (CFG.Setting.mmmm)
-                    {
-                        if (!flag3)
-                        {
-                            canAttack.Hook();
-                            flag3 = true;
-                        }
-                    }
-                    else if (flag3)
-                    {
-                        canAttack.Unhook();
-                        flag3 = false;
-                    }
-                    if (menu.test)
-                    {
-                        if (!flag2)
-                        {
-                            canAttack.Hook();
-                            flag2 = false;
-                        }
-                    }
-                    else if (flag2)
-                    {
-                        canAttack.Unhook();
-                        flag2 = false;
-                    }
-                    if (CFG.Setting.hyk)
-                    {
-                        BowWeapon component = HACK.localplayer.GetHeldEntity().GetComponent<BowWeapon>();
-                        if (component != null)
-                        {
-                            component.recoil = null;
-                            component.automatic = true;
-                            component.aiming = true;
-                            component.aimCone = 0f;
-                            HACK.nig.SetValue(component, true);
-                        }
-                    }
-
-                    if (CFG.Setting.df && UnityEngine.Input.GetKey(KeyCode.Z))
-                    {
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().SetPrivateField("flying", true);
-                        if (oldshit == 0f)
-                        {
-                            oldshit = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
-                        }
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = 0f;
-                    }
-                    else if (oldshit != 0f)
-                    {
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit;
-                    }
-                    if (menu.asd)
-                    {
-                        if (!asaaa)
-                        {
-                            dfdsf.Hook();
-                            VoiceRecvHook(true);
-                            SendP2PHook(true);
-                            P2PUpdate(true);
-                            asaaa = true;
-                        }
-                    }
-                    else if (asaaa)
-                    {
-                        dfdsf.Unhook();
-                        VoiceRecvHook(false);
-                        SendP2PHook(false);
-                        P2PUpdate(false);
-                        asaaa = false;
-                    }
-
-                    if (CFG.Setting.spin || CFG.Setting.govno2)
-                    {
-                        if (!flag)
-                        {
-                            spin.Hook();
-                            flag = true;
-                        }
-                    }
-                    else if (flag)
-                    {
-                        spin.Unhook();
-                        flag = false;
-                    }
-
-                    if (CFG.Setting.ASDADAD)
-                    {
-                        if (oldswimshit == 0f)
-                        {
-                            oldswimshit = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplierSwimming;
-                        }
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplierSwimming = oldswimshit / -1f;
-                    }
-                    else if (oldswimshit != 0f)
-                    {
-                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplierSwimming = oldswimshit;
-                    }
-                    if (CFG.Setting.dfdf)
-                    {
-                        Vector2 b = new Vector2(Screen.width / 2f, Screen.height / 2f);
-                        foreach (SupplyDrop supplyDrop in companent.airdrops)
-                        {
-                            if (supplyDrop != null)
-                            {
-                                float num4 = (int)Vector2.Distance(MainCamera.mainCamera.WorldToScreenPoint(supplyDrop.transform.position), b);
-                                Vector3 rhs = supplyDrop.transform.position - MainCamera.mainCamera.transform.position;
-                                if (num4 <= CFG.Setting.fov)
-                                {
-                                    Vector3.Dot(MainCamera.mainCamera.transform.TransformDirection(Vector3.forward), rhs);
-                                }
-                            }
-                            if (supplyDrop != null)
-                            {
-                                int num2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, supplyDrop.transform.position);
-                                MainCamera.mainCamera.WorldToScreenPoint(supplyDrop.transform.position);
-                                if (Players.GetScreenPos(supplyDrop.transform.position).z > 0f && num2 <= HACK.player1 && UnityEngine.Input.GetKey(KeyCode.X))
-                                {
-                                    bool arg = false;
-                                    uint arg2 = 0U;
-                                    Vector3 arg3 = LocalPlayer.Entity.transform.position = supplyDrop.transform.position + new Vector3(0f, HACK.teleportheight, 0f);
-                                    LocalPlayer.Entity.ServerRPC<bool, Vector3, uint>("RPC_StartClimb", arg, arg3, arg2);
-                                }
-                            }
-                        }
-                    }
-                    if (CFG.Setting.ahahahha)
-                    {
-                        Vector2 b2 = new Vector2(Screen.width / 2f, Screen.height / 2f);
-                        foreach (global::BasePlayer basePlayer in global::BasePlayer.VisiblePlayerList)
-                        {
-                            if (basePlayer != null && !basePlayer.IsSleeping() && !basePlayer.IsDead())
-                            {
-                                Vector2.Distance(MainCamera.mainCamera.WorldToScreenPoint(basePlayer.model.headBone.transform.position), b2);
-                                Vector3 rhs2 = basePlayer.transform.position - MainCamera.mainCamera.transform.position;
-                                if (!basePlayer.IsLocalPlayer() && basePlayer.health > 0f)
-                                {
-                                    Vector3.Dot(MainCamera.mainCamera.transform.TransformDirection(Vector3.forward), rhs2);
-                                }
-                            }
-                            int num3 = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, basePlayer.transform.position);
-                            if (Players.GetScreenPos(basePlayer.transform.position).z > 0f && basePlayer != null && !basePlayer.IsDead() && !basePlayer.IsSleeping() && !basePlayer.IsLocalPlayer() && num3 <= HACK.player1 && UnityEngine.Input.GetKey(KeyCode.X))
-                            {
-                                bool arg4 = false;
-                                uint arg5 = 0U;
-                                Vector3 arg6 = LocalPlayer.Entity.transform.position = basePlayer.transform.position + new Vector3(0f, HACK.teleportheight, 0f);
-                                LocalPlayer.Entity.ServerRPC<bool, Vector3, uint>("RPC_StartClimb", arg4, arg6, arg5);
-                            }
-                        }
-                    }
-                }
-
-            }
-            catch (Exception)
-            {
-            }
-            yield return new WaitForSeconds(0.01f);
-        }
-    }
-    private IEnumerator gravityandwalk()
-    {
-        float oldshit2 = 0f;
-        bool darkness = false;
-        bool time = false;
-        bool fdfg = false;
-        while (true)
-        {
-            try
-            {
-                if (LocalPlayer.Entity != null)
-                {
-                    ffffff.Hook();
-                }
-                else
-                {
-                    ffffff.Unhook();
-                }
-                if (CFG.Setting.cdddeee)
-                {
-                    aimcone.Hook();
-                }
-                if (CFG.Setting.sfwewwww)
-                {
-                    if (!fdfg)
-                    {
-                        shotgunspread1.Hook();
-                        fdfg = true;
-                    }
-                }
-                else if (fdfg)
-                {
-                    shotgunspread1.Unhook();
-
-                    fdfg = false;
-                }
-                if (LocalPlayer.Entity != null && CFG.Setting.hyk)
-                {
-                    BowWeapon component = localplayer.GetHeldEntity().GetComponent<BowWeapon>();
-                    if (component != null)
-                    {
-                        component.recoil = null;
-                        component.automatic = true;
-                        component.aiming = true;
-                        component.aimCone = 0f;
-                        HACK.nig.SetValue(component, true);
-                    }
-                }
-                if (LocalPlayer.Entity != null && CFG.Setting.time)
-                {
-                    if (!time)
-                    {
-                        tt(true);
-                        time = true;
-                    }
-                    TOD_Sky.Instance.Cycle.Hour = CFG.Setting.dfd;
-                }
-                else if (time)
-                {
-                    tt(false);
-                    time = false;
-                }
-                if (LocalPlayer.Entity != null && CFG.Setting.свет)
-                {
-                    if (!darkness)
-                    {
-                        resetter.Hook();
-                        darkness = true;
-                    }
-                }
-                else if (darkness)
-                {
-                    resetter.Hook();
-                    darkness = false;
-                }
-                if (LocalPlayer.Entity != null && CFG.Setting.HGHGH)
-                {
-                    if (oldshit2 == 0f)
-                    {
-                        oldshit2 = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
-                    }
-                    HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit2 / 2f;
-                }
-                else if (oldshit2 != 0f)
-                {
-                    HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit2;
-                }
-
-                if (LocalPlayer.Entity != null)
-                {
-                    ConVar.Graphics.fov = CFG.Setting.vov;
-                }
-            }
-            catch
-            {
-            }
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
+    private float distance; private float float_0;
     private void Update()
     {
-        bool darkness = false;
-        bool multiJump_Hooked = false;
-        bool speed = false;
-        bool fdfg = false;
-        bool fd11fg = false;
-        bool aimwhilesprinting = false;
-        if (CFG.Setting.cdddeee)
-        {
-            aimcone.Hook();
-        }
-        if (LocalPlayer.Entity != null)
-        {
-            ffffff.Hook();
-        }
-        else
-        {
-            ffffff.Unhook();
-        }
-
-        if (CFG.Setting.spin || CFG.Setting.govno2)
-        {
-            if (!fd11fg)
-            {
-                spin.Hook();
-                fd11fg = true;
-            }
-        }
-        else if (fd11fg)
-        {
-            spin.Unhook();
-            fd11fg = false;
-        }
-
-        if (CFG.Setting.sfwewwww)
-        {
-            if (!fdfg)
-            {
-                shotgunspread1.Hook();
-                fdfg = true;
-            }
-        }
-        else if (fdfg)
-        {
-            shotgunspread1.Unhook();
-
-            fdfg = false;
-        }
-        if (LocalPlayer.Entity != null && CFG.Setting.eeeeeeeee)
-        {
-            if (!aimwhilesprinting)
-            {
-                canaim.Hook();
-                canaim1.Hook();
-                aimwhilesprinting = true;
-            }
-        }
-        else if (aimwhilesprinting)
-        {
-            canaim.Unhook();
-            canaim1.Unhook();
-            aimwhilesprinting = false;
-        }
-
-
-        if (LocalPlayer.Entity != null && CFG.Setting.asawersffd)
-        {
-            if (!multiJump_Hooked)
-            {
-                jump.Hook();
-                multiJump_Hooked = true;
-            }
-            else if (multiJump_Hooked)
-            {
-                jump.Unhook();
-                multiJump_Hooked = false;
-            }
-        }
-        if (LocalPlayer.Entity != null && CFG.Setting.blats)
-        {
-            if (!speed)
-            {
-                ggdsfdf.Hook();
-                speed = true;
-            }
-            else if (speed)
-            {
-                ggdsfdf.Unhook();
-                speed = false;
-            }
-        }
-        if (LocalPlayer.Entity != null && CFG.Setting.свет)
-        {
-            if (!darkness)
-            {
-                resetter.Hook();
-                darkness = true;
-            }
-        }
-        else if (darkness)
-        {
-            resetter.Hook();
-            darkness = false;
-        }
-        if (LocalPlayer.Entity != null && CFG.Setting.mbnbnm && HACK.localplayer.modelState != null)
-        {
-            HACK.localplayer.modelState.waterLevel = 99999f;
-        }
-        if (LocalPlayer.Entity != null && CFG.Setting.mmmm && HACK.localplayer.modelState != null)
-        {
-            HACK.localplayer.modelState.waterLevel = 0f;
-        }
-
-        if (LocalPlayer.Entity != null && BaseEntityEx.IsValid(LocalPlayer.Entity) && CFG.Setting.tree)
-        {
-            Item activeItem = LocalPlayer.Entity.Belt.GetActiveItem();
-            if (activeItem != null && (activeItem.info.shortname.Contains("stonehatchet") || activeItem.info.shortname.Contains("hatchet") || activeItem.info.shortname.Contains("hammer.salvaged") || activeItem.info.shortname.Contains("chainsaw") || activeItem.info.shortname.Contains("bone.club") || activeItem.info.shortname.Contains("rock") || activeItem.info.shortname.Contains("axe.salvaged")))
-            {
-                Vector3 vector = LocalPlayer.Entity.transform.position;
-                HeldEntity heldEntity = LocalPlayer.Entity.GetHeldEntity();
-                if (heldEntity != null)
-                {
-                    BaseEntity baseEntity = null;
-                    BaseEntity baseEntity2 = null;
-                    float num = float.MaxValue;
-                    float num2 = float.MaxValue;
-
-                    foreach (TreeEntity treeEntity in companent.trees)
-                    {
-                        BaseEntity baseEntity3 = treeEntity;
-                        if (!(baseEntity3 == null) && baseEntity3.IsValid())
-                        {
-                            if (baseEntity3.prefabID == 954334883)
-                            {
-                                float num3 = Vector3.Distance(vector, baseEntity3.transform.position);
-                                if (num3 <= 5f && num3 < num)
-                                {
-                                    baseEntity = baseEntity3;
-                                    num = num3;
-                                }
-                            }
-                            else if (baseEntity3 is TreeEntity)
-                            {
-                                Vector3 position = baseEntity3.transform.position;
-                                position.y = vector.y;
-                                float num4 = Vector3.Distance(vector, position);
-                                if (num4 <= 3.5f && num4 < num2)
-                                {
-                                    baseEntity2 = baseEntity3;
-                                    num2 = num4;
-                                }
-                            }
-                        }
-                    }
-                    if (baseEntity2 != null)
-                    {
-                        Vector3 a_;
-                        if (baseEntity != null)
-                        {
-                            Vector3 b = baseEntity2.transform.position - baseEntity.transform.position;
-                            b.y = 0f;
-                            b.Normalize();
-                            vector = baseEntity.transform.position - b;
-                            a_ = baseEntity.transform.position;
-                        }
-                        else if (GamePhysics.Trace(new Ray(LocalPlayer.Entity.transform.position, (baseEntity2.transform.position - LocalPlayer.Entity.transform.position).normalized), 0f, out RaycastHit raycastHit, 15f, 1101212417, QueryTriggerInteraction.UseGlobal))
-                        {
-                            a_ = raycastHit.point;
-                        }
-                        else
-                        {
-                            a_ = baseEntity2.transform.position;
-                        }
-                        AttackEntity attackEntity = heldEntity as AttackEntity;
-                        if (attackEntity == null)
-                        {
-                            return;
-                        }
-                        if (UnityEngine.Time.time - float_0 < attackEntity.repeatDelay)
-                        {
-                            return;
-                        }
-
-                        Ray ray = new Ray(vector, (a_ - vector));
-                        using (PlayerAttack playerAttack = Facepunch.Pool.Get<PlayerAttack>())
-                        {
-                            using (Attack attack = Facepunch.Pool.Get<Attack>())
-                            {
-                                playerAttack.attack = attack;
-                                playerAttack.attack.hitMaterialID = 3655341;
-                                playerAttack.attack.hitID = baseEntity2.net.ID;
-                                playerAttack.attack.hitPositionWorld = a_;
-                                playerAttack.attack.hitNormalWorld = ray.direction;
-                                playerAttack.attack.pointStart = vector;
-                                playerAttack.attack.pointEnd = a_;
-                                attackEntity.ServerRPC<PlayerAttack>("PlayerAttack", playerAttack);
-                            }
-                        }
-                        float_0 = UnityEngine.Time.time;
-
-                    }
-                }
-            }
-        }
-        if (CFG.Setting.frre && UnityEngine.Input.GetKeyDown(KeyCode.Alpha9))
+        if (menu.frre && UnityEngine.Input.GetKeyDown(KeyCode.Alpha9))
         {
             friend.AddFriend();
         }
-        if (CFG.Setting.adsfdgrege)
+        if (CFG.Misc.adsfdgrege)
         {
             try
             {
-                foreach (BasePlayer basePlayer2 in BasePlayer.VisiblePlayerList)
+                foreach (BasePlayer basePlayer2 in BasePlayer.visiblePlayerList)
                 {
                     if (basePlayer2.IsLocalPlayer())
                     {
-                        typeof(PlayerWalkMovement).GetField("groundAngle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 0f);
                         typeof(PlayerWalkMovement).GetField("groundAngleNew", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 0f);
-                        typeof(PlayerWalkMovement).GetField("maxAngleClimbing", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 999f);
-                        typeof(PlayerWalkMovement).GetField("maxAngleWalking", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 999f);
                         typeof(PlayerWalkMovement).GetField("grounded", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, true);
+                        typeof(PlayerWalkMovement).GetField("groundAngle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 0f);
                     }
                 }
             }
@@ -745,7 +263,7 @@ public class HACK : MonoBehaviour
             }
         }
 
-        if (CFG.Setting.winrar && LocalPlayer.Entity != null && BaseEntityEx.IsValid(LocalPlayer.Entity))
+        if (CFG.Misc.winrar && LocalPlayer.Entity != null && BaseEntityEx.IsValid(LocalPlayer.Entity))
         {
             HeldEntity heldEntity = LocalPlayer.Entity.GetHeldEntity();
             BaseMelee baseMelee = heldEntity as BaseMelee;
@@ -753,20 +271,20 @@ public class HACK : MonoBehaviour
             {
                 return;
             }
-            if (UnityEngine.Time.time - float_0 < baseMelee.repeatDelay)
+            if (UnityEngine.Time.time - this.float_0 < baseMelee.repeatDelay)
             {
                 return;
             }
             {
-                bool f1lag = false;
+                bool flag = false;
                 int itemid = heldEntity.GetItem().info.itemid;
                 if (itemid == -1506397857 || itemid == 1711033574 || itemid == -1780802565 || itemid == 171931394 || itemid == -1302129395 || itemid == 1488979457 || itemid == 963906841)
                 {
-                    f1lag = true;
+                    flag = true;
                 }
-                if (f1lag)
+                if (flag)
                 {
-                    foreach (OreHotSpot player in companent.orehotspot)
+                    foreach (BaseResource player in companent.orehotspot)
                     {
                         if (player != null && !player && BaseEntityEx.IsValid(player) && BaseEntityEx.IsValid(baseMelee))
                         {
@@ -785,11 +303,11 @@ public class HACK : MonoBehaviour
                                         playerAttack.attack.pointEnd = player.transform.position;
                                         playerAttack.attack = attack;
 
-                                        baseMelee.ServerRPC<PlayerAttack>("PlayerAttack", playerAttack);
+                                        baseMelee.ServerRPC("PlayerAttack", playerAttack,null,null,null,null);
 
                                     }
                                 };
-                                float_0 = UnityEngine.Time.time;
+                                this.float_0 = UnityEngine.Time.time;
                             }
                         }
                     }
@@ -801,69 +319,65 @@ public class HACK : MonoBehaviour
 
 
         }
+        if (CFG.Misc.walkon)
+        {
 
+            foreach (BasePlayer basePlayer2 in BasePlayer.visiblePlayerList)
+            {
+                if (basePlayer2.IsLocalPlayer())
+                {
+                    typeof(PlayerWalkMovement).GetField("groundAngleNew", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 0f);
+                    typeof(PlayerWalkMovement).GetField("grounded", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, true);
+                    typeof(PlayerWalkMovement).GetField("groundAngle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).SetValue(basePlayer2.movement, 0f);
+                }
+            }
+        }
     }
-    private IEnumerator heal()
+    private IEnumerator Updating9445()
     {
         while (true)
         {
             try
             {
 
-                if (CFG.Setting.NAXYI)
+               
+                if (CFG.Misc.NAXYI)
                 {
-                    foreach (MedicalTool codelock in companent.fuck)
+                  
+                    foreach (BasePlayer visiblePlayer in BasePlayer.visiblePlayerList)
                     {
-
-                        Item activeItem = LocalPlayer.Entity.Belt.GetActiveItem();
-                        if (codelock != null && !codelock.IsDestroyed && activeItem != null && (activeItem.info.shortname.Contains("syringe.medical")))
+                        foreach (MedicalTool tool in companent.fuck)
                         {
                             HeldEntity entity = LocalPlayer.Entity.GetHeldEntity();
-                            int lock_distance = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, codelock.transform.position);
-                            MethodInfo point2point = localplayer.GetType().GetMethod("PointSeePoint", BindingFlags.NonPublic | BindingFlags.Instance);
-                            bool canSeeLock = (bool)point2point.Invoke(localplayer, new object[] { localplayer.GetModel().eyeBone.position, codelock.transform.position, 0f, false });
-                            if (lock_distance <= 3f && canSeeLock && HACK.localplayer.health < 87)
+                            int lock_distance3 = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, entity.transform.position);
+                            int lock_distance4 = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, visiblePlayer.transform.position);
+                            int lock_distance5 = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, tool.transform.position);
+                            bool flag2 = entity is MedicalTool && visiblePlayer.health <= 87f && (float)lock_distance3 <= 2f && (float)lock_distance5 <= 2f && (float)lock_distance4 <= 2f;
+                            if (flag2)
                             {
-                                codelock.ServerRPC("UseSelf");
+                                entity.ServerRPC("UseSelf", null, null, null, null, null);
                             }
                         }
                     }
                 }
-                if (CFG.Setting.NAXYI)
-                {
-                    foreach (MedicalTool codelock in companent.fuck)
-                    {
-                        Item activeItem = LocalPlayer.Entity.Belt.GetActiveItem();
-                        if (codelock != null && !codelock.IsDestroyed && activeItem != null && (activeItem.info.shortname.Contains("bandage")))
-                        {
-                            HeldEntity entity = LocalPlayer.Entity.GetHeldEntity();
-                            int lock_distance = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, codelock.transform.position);
-                            MethodInfo point2point = localplayer.GetType().GetMethod("PointSeePoint", BindingFlags.NonPublic | BindingFlags.Instance);
-                            bool canSeeLock = (bool)point2point.Invoke(localplayer, new object[] { localplayer.GetModel().eyeBone.position, codelock.transform.position, 0f, false });
-                            if (lock_distance <= 3f && canSeeLock && HACK.localplayer.health < 99)
-                            {
-                                codelock.ServerRPC("UseSelf");
-                            }
-                        }
-                    }
-                }
+            
 
             }
             catch
             {
             }
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.5f);
         }
     }
-    private IEnumerator brr()
+    private IEnumerator Updating94145()
     {
         while (true)
         {
             try
             {
 
-
-                if (CFG.Setting.AASDD && UnityEngine.Input.GetKey(KeyCode.F))
+              
+                if (CFG.Misc.AASDD && UnityEngine.Input.GetKey(KeyCode.F))
                 {
                     foreach (GrenadeWeapon nigger in companent.ssss)
                     {
@@ -871,11 +385,11 @@ public class HACK : MonoBehaviour
                         int lock_distance = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, ff.transform.position);
                         if (ff is GrenadeWeapon && lock_distance <= 4f)
                         {
-                            ff.ServerRPC("DoThrow", ff.transform.position, LocalPlayer.Entity.eyes.BodyForward(), 0.5f);
+                            ff.ServerRPC("DoThrow", ff.transform.position, LocalPlayer.Entity.eyes.BodyForward() , 1f, null, null);
                         }
                     }
                 }
-                if (CFG.Setting.test3 && UnityEngine.Input.GetKey(KeyCode.F))
+                if (menu.test3 && UnityEngine.Input.GetKey(KeyCode.F))
                 {
                     foreach (GrenadeWeapon nigger in companent.ssss)
                     {
@@ -883,29 +397,59 @@ public class HACK : MonoBehaviour
                         int lock_distance = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, ff.transform.position);
                         if (ff is GrenadeWeapon && lock_distance <= 4f)
                         {
-                            ff.ServerRPC("DoDrop", ff.transform.position, LocalPlayer.Entity.eyes.BodyForward(), 0.5f);
+                            ff.ServerRPC("DoDrop", ff.transform.position, LocalPlayer.Entity.eyes.BodyForward(), 1f, null, null);
                         }
                     }
                 }
-
+                
 
 
             }
             catch
             {
             }
-            yield return new WaitForSeconds(0.4f);
+            yield return new WaitForSeconds(0.2f);
         }
     }
-
-
-    private IEnumerator winer()
+    private IEnumerator Updating94415()
     {
         while (true)
         {
             try
             {
-                if (CFG.Setting.ZAEB && UnityEngine.Input.GetKey(KeyCode.F))
+                bool flag = localplayer != null;
+                if (flag)
+                {
+                    if (menu.mbnbnm && localplayer.modelState != null)
+
+                    {
+                        localplayer.modelState.waterLevel = 99999f;
+                    }
+                    if (menu.mmmm && localplayer.modelState != null)
+
+                    {
+                        localplayer.modelState.waterLevel = 0;
+                    }
+
+
+
+
+                }
+            }
+            catch
+            {
+            }
+            yield return new WaitForSeconds(0f);
+        }
+    }
+
+    private IEnumerator Updating94456()
+    {
+        while (true)
+        {
+            try
+            {
+                if (CFG.Misc.ZAEB && UnityEngine.Input.GetKey(KeyCode.F))
                 {
 
                     {
@@ -915,11 +459,11 @@ public class HACK : MonoBehaviour
                         BasePlayer target = nigger.GetTarget();
                         if (entity is MedicalTool && lock_distance <= 4f)
                         {
-                            entity.ServerRPC<uint>("UseOther", target.net.ID);
+                            entity.ServerRPC("UseOther", target.net.ID,null,null,null,null);
                         }
                     }
                 }
-                if (UnityEngine.Input.GetKey(KeyCode.U) && CFG.Setting.oiuytgbmnb)
+                if (UnityEngine.Input.GetKey(KeyCode.U) && CFG.Misc.oiuytgbmnb)
                 {
                     foreach (BuildingPrivlidge buildingPrivlidge in companent.tcshit)
                     {
@@ -928,13 +472,13 @@ public class HACK : MonoBehaviour
 
                             if (Vector3.Distance(localplayer.transform.position, buildingPrivlidge.transform.position) <= 5f)
                             {
-                                buildingPrivlidge.ServerRPC("ClearList");
-                                buildingPrivlidge.ServerRPC("AddSelfAuthorize");
+                                buildingPrivlidge.ServerRPC("ClearList", null, null, null, null);
+                                buildingPrivlidge.ServerRPC("AddSelfAuthorize", null, null, null, null);
                             }
                         }
                     }
                 }
-                if (CFG.Setting.vbfgcvvcv)
+                if (CFG.Misc.vbfgcvvcv)
                 {
                     foreach (Landmine land in companent.land)
                     {
@@ -942,12 +486,12 @@ public class HACK : MonoBehaviour
                         {
                             if (Vector3.Distance(localplayer.transform.position, land.transform.position) <= 5f)
                             {
-                                land.ServerRPC("RPC_Disarm");
+                                land.ServerRPC("RPC_Disarm", null, null, null, null);
                             }
                         }
                     }
                 }
-                if (CFG.Setting.vbfgcvvcv)
+                if (CFG.Misc.vbfgcvvcv)
                 {
                     foreach (BearTrap land1 in companent.land1)
                     {
@@ -956,19 +500,18 @@ public class HACK : MonoBehaviour
                             if (Vector3.Distance(localplayer.transform.position, land1.transform.position) <= 5f)
                             {
 
-                                land1.ServerRPC("RPC_PickupStart");
+                                land1.ServerRPC("RPC_PickupStart", null, null, null, null); 
                             }
                         }
                     }
                 }
-                if (CFG.Setting.adsafsddvcvc)
+                if (CFG.Misc.adsafsddvcvc)
                 {
                     foreach (AutoTurret autoTurret in companent.autoturretsss)
                     {
                         if (Vector3.Distance(localplayer.transform.position, autoTurret.transform.position) <= 5f)
-                        {
-                            autoTurret.ServerRPC("AddSelfAuthorize");
-                        }
+
+                            autoTurret.ServerRPC("AddSelfAuthorize", null, null, null, null);
                     }
                 }
 
@@ -983,7 +526,7 @@ public class HACK : MonoBehaviour
     public IEnumerator yasssss4t()
     {
         Vector2 centerScreen = new Vector2(Screen.width / 2f, Screen.height / 2f);
-        foreach (BasePlayer player in BasePlayer.VisiblePlayerList)
+        foreach (BasePlayer player in BasePlayer.visiblePlayerList)
         {
 
 
@@ -1006,26 +549,8 @@ public class HACK : MonoBehaviour
             yield return new WaitForSeconds(0.100f);
         }
     }
-    public bool HasLocalControls()
-    {
-        return localplayer;// && !EnemyPlayer.IsSpectating() && !EnemyPlayer.IsDead() && !EnemyPlayer.IsSleeping() && !EnemyPlayer.IsWounded() && (SingletonComponent<CameraMan>.Instance == null || !SingletonComponent<CameraMan>.Instance.enabled);
-    }
-
-    public bool HasLocalControlsTrampoline()
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-        return localplayer;// && !EnemyPlayer.IsSpectating() && !EnemyPlayer.IsDead() && !EnemyPlayer.IsSleeping() && !EnemyPlayer.IsWounded() && (SingletonComponent<CameraMan>.Instance == null || !SingletonComponent<CameraMan>.Instance.enabled);
-    }
-    private IEnumerator hok()
+  
+    private IEnumerator MiscFuncs11()
     {
         while (true)
         {
@@ -1038,7 +563,7 @@ public class HACK : MonoBehaviour
                 {
 
 
-                    if (CFG.Setting.nnn)
+                    if (menu.nnn)
                     {
                         LocalPlayer.Entity.SendSignalBroadcast(BaseEntity.Signal.Gesture, "drop_item");
                         LocalPlayer.Entity.SendSignalBroadcast(BaseEntity.Signal.Gesture, "pickup_item");
@@ -1058,7 +583,7 @@ public class HACK : MonoBehaviour
             yield return new WaitForSeconds(0.1f);
         }
     }
-    private IEnumerator hook()
+    private IEnumerator MiscFuncs111()
     {
         while (true)
         {
@@ -1070,11 +595,11 @@ public class HACK : MonoBehaviour
                 {
 
 
-                    if (CFG.Setting.test41)
+                    if (menu.test41)
                     {
 
-
-
+                      
+                        
                         LocalPlayer.Entity.SendSignalBroadcast(BaseEntity.Signal.Reload);
 
 
@@ -1090,76 +615,359 @@ public class HACK : MonoBehaviour
             yield return new WaitForSeconds(0.25f);
         }
     }
-    public static float dfd;
-
-    private unsafe void VoiceRecvHook(bool set)
+    private IEnumerator MiscFuncs1()
     {
-        try
+        bool multiJump_Hooked = false;
+        bool hookedshit = false;
+        bool aimwhilesprinting = false;
+        bool noaimcone = false;
+        bool speed = false;
+        bool shotgunspread = false;
+
+        bool darkness1 = false;
+        bool darkness = false;
+        float oldswimshit = 0f; float oldshit = 0f; float oldshit1 = 0f;
+
+        while (true)
         {
-            MethodInfo p2p_req = typeof(Facepunch.Steamworks.Networking).GetMethod("onP2PConnectionRequest", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new Type[] { typeof(ValueType), typeof(bool) }, null);
-            RuntimeHelpers.PrepareMethod(p2p_req.MethodHandle);
-            IntPtr recvptr = p2p_req.MethodHandle.GetFunctionPointer();
-            DumbHook.Import.VirtualProtect(recvptr, 1, 0x40, out uint oldProt);
-            if (set == true)
+            try
             {
+                bool f = false; bool ff = false; bool fff = false; bool ffff = false;
+                bool attackAnywhere_Hooked11 = false;
+                bool attackAnywhere_Hooked1 = false;
+                bool attackAnywhere_Hooked = false;
+                if (localplayer != null)
                 {
-                    byte* ptr = (byte*)recvptr;
-                    *(ptr) = 0xc3;
+                    if (CFG.Misc.cahh || CFG.Aimbot.qewqefdsf || CFG.Aimbot.BulletDropPrediction || CFG.Aimbot.dffs)
+                    {
+                        if (!darkness1)
+                        {
+                            boredasf1.Hook();
+                            darkness1 = true;
+                        }
+                    }
+                   
+                    if (ESP.свет)
+                    {
+                        if (!darkness)
+                        {
+                            resetter.Hook();
+                            darkness = true;
+                        }
+                    }
+                    else
+                    {
+                        if (darkness)
+                        {
+                            resetter.Hook();
+                            darkness = false;
+                        }
+                    }
+                    if (CFG.Misc.eeeeeeeee)
+                    {
+                        if (!aimwhilesprinting)
+                        {
+                            canaim.Hook();
+                            canaim1.Hook();
+                            aimwhilesprinting = true;
+                        }
+                    }
+                    else
+                    {
+                        if (aimwhilesprinting)
+                        {
+                            canaim.Unhook();
+                            canaim1.Unhook();
+                            aimwhilesprinting = false;
+                        }
+                    }
+                    if (CFG.Misc.offd)
+                    {
+                        if (!hookedshit)
+                        {
+                            hahyea.Hook();
+                            hookedshit = true;
+                        }
+                    }
+                    else
+                    {
+                        if (hookedshit)
+                        {
+                            hahyea.Unhook();
+                            hookedshit = false;
+                        }
+                    }
+
+                    if (CFG.Misc.asawersffd)
+                    {
+                        if (!multiJump_Hooked)
+                        {
+                            jump.Hook();
+                            multiJump_Hooked = true;
+                        }
+
+                        else
+
+                        if (multiJump_Hooked)
+                        {
+                            jump.Unhook();
+                            multiJump_Hooked = false;
+                        }
+                    }
+
+
+                    if (CFG.Misc.blats)
+                    {
+                        if (!speed)
+                        {
+                            ggdsfdf.Hook();
+                            speed = true;
+                        }
+
+                        else
+
+                        if (speed)
+                        {
+                            ggdsfdf.Unhook();
+                            speed = false;
+                        }
+                    }
+                    if (CFG.Misc.podgs)
+                    {
+                        if (oldshit1 == 0f)
+                            oldshit1 = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
+                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit1 / 2f;
+                    }
+                    else
+                    {
+                        if (oldshit1 != 0f)
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit1;
+                    }
+
+
+
+
+
+                  
+
+
+                    if (CFG.Aimbot.cdddeee)
+                    {
+                        if (!noaimcone)
+                        {
+                            aimcone.Hook();
+                            noaimcone = true;
+                        }
+                    }
+                    if (CFG.Aimbot.sfwewwww)
+                    {
+                        if (!shotgunspread)
+                        {
+                            shotgunspread1.Hook();
+                            shotgunspread = true;
+                        }
+                    }
+                    if (CFG.Aimbot.dfdswe)
+                    {
+                        if (!attackAnywhere_Hooked)
+                        {
+                            canAttack.Hook();
+                            attackAnywhere_Hooked = true;
+                        }
+                    }
+                    else
+                    {
+                        if (attackAnywhere_Hooked)
+                        {
+                            canAttack.Unhook();
+                            attackAnywhere_Hooked = false;
+                        }
+                    }
+                    if (menu.mmmm)
+                    {
+                        if (!attackAnywhere_Hooked1)
+                        {
+                            canAttack.Hook();
+                            attackAnywhere_Hooked1 = true;
+                        }
+                    }
+                    else
+                    {
+                        if (attackAnywhere_Hooked1)
+                        {
+                            canAttack.Unhook();
+                            attackAnywhere_Hooked1 = false;
+                        }
+                    }
+                    if (menu.test)
+                    {
+                        if (!attackAnywhere_Hooked11)
+                        {
+                            canAttack.Hook();
+                            attackAnywhere_Hooked11 = true;
+                        }
+                    }
+                    else
+                    {
+                        if (attackAnywhere_Hooked11)
+                        {
+                            canAttack.Unhook();
+                            attackAnywhere_Hooked11 = false;
+                        }
+                    }
+                    if (CFG.Misc.hyk)
+                    {
+                        BowWeapon bow = localplayer.GetHeldEntity().GetComponent<BowWeapon>();
+                        {
+                            if (bow != null)
+                            {
+                                bow.recoil = null;
+                                bow.automatic = true;
+                                bow.aiming = true;
+                                bow.aimCone = 0f;
+                                nig.SetValue(bow, true);
+                            }
+                        }
+                    }
+                    if (CFG.Misc.walkon && UnityEngine.Input.GetKey(KeyCode.C))
+                    {
+
+                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().SetPrivateField("flying", true);
+                        if (oldshit == 0f)
+                            oldshit = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
+                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = 0f;
+
+                    }
+                    else
+                    {
+                        if (oldshit != 0f)
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit;
+                    }
+                    if (CFG.Misc.df && UnityEngine.Input.GetKey(KeyCode.Z))
+                    {
+
+                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().SetPrivateField("flying", true);
+                        if (oldshit == 0f)
+                            oldshit = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
+                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = 0f;
+
+                    }
+                    else
+                    {
+                        if (oldshit != 0f)
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit;
+                    }
+
+
+
+
+
+
+                    if (CFG.Misc.ASDADAD)
+                    {
+                        if (oldswimshit == 0f)
+                            oldswimshit = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplierSwimming;
+                        HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplierSwimming = oldswimshit / -1f;
+                    }
+                    else
+                    {
+                        if (oldswimshit != 0f)
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplierSwimming = oldswimshit;
+                    }
+                    if (CFG.Misc.dfdf)
+                    {
+                        Vector2 centerScreen = new Vector2(Screen.width / 2f, Screen.height / 2f);
+                        foreach (SupplyDrop player in companent.airdrops)
+                        {
+
+                            if (player != null)
+                            {
+                                int distanceFromCenter = (int)(Vector2.Distance(MainCamera.mainCamera.WorldToScreenPoint(player.transform.position), centerScreen));
+                                Vector3 onScreen = player.transform.position - MainCamera.mainCamera.transform.position;
+                                if (distanceFromCenter <= menu.fov && Vector3.Dot(MainCamera.mainCamera.transform.TransformDirection(Vector3.forward), onScreen) > 0)
+                                    ;
+                            }
+
+                            if (player != null)
+                            {
+                                int dist = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, player.transform.position);
+                                Vector3 vector = MainCamera.mainCamera.WorldToScreenPoint(player.transform.position);
+                                Vector3 screenPos = Players.GetScreenPos(player.transform.position);
+                                if (screenPos.z > 0f && dist <= player1 && UnityEngine.Input.GetKey(KeyCode.X))
+                                {
+                                    bool niggeribtch = false;
+                                    uint uiEntityId = 0;
+                                    Vector3 targetpos = LocalPlayer.Entity.transform.position = player.transform.position + new Vector3(0f, teleportheight, 0f);
+                                    LocalPlayer.Entity.ServerRPC("RPC_StartClimb", niggeribtch, targetpos, uiEntityId, null, null);
+                                }
+                            }
+                        }
+                    }
+                    if (CFG.Misc.ahahahha)
+                    {
+                        Vector2 centerScreen = new Vector2(Screen.width / 2f, Screen.height / 2f);
+                        foreach (BasePlayer player in BasePlayer.visiblePlayerList)
+                        {
+
+                            if (player != null && !player.IsSleeping() && !player.IsDead())
+                            {
+                                int distanceFromCenter = (int)(Vector2.Distance(MainCamera.mainCamera.WorldToScreenPoint(player.model.headBone.transform.position), centerScreen));
+                                Vector3 onScreen = player.transform.position - MainCamera.mainCamera.transform.position;
+                                if (!player.IsLocalPlayer() && player.health > 0f && Vector3.Dot(MainCamera.mainCamera.transform.TransformDirection(Vector3.forward), onScreen) > 0)
+                                    ;
+                            }
+
+
+                            int dist = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, player.transform.position);
+                            Vector3 screenPos = Players.GetScreenPos(player.transform.position);
+                            if (screenPos.z > 0f && player != null && !player.IsDead() && !player.IsSleeping() && !player.IsLocalPlayer() && dist <= player1 && UnityEngine.Input.GetKey(KeyCode.X))
+                            {
+                                bool niggeribtch = false;
+                                uint uiEntityId = 0;
+                                Vector3 targetpos = LocalPlayer.Entity.transform.position = player.transform.position + new Vector3(0f, teleportheight, 0f);
+                                LocalPlayer.Entity.ServerRPC("RPC_StartClimb", niggeribtch, targetpos, uiEntityId, null, null);
+                            }
+                        }
+                    }
+
+
                 }
             }
-            else
+            catch (Exception)
             {
-                {
-                    byte* ptr = (byte*)recvptr;
-                    *(ptr) = 0x55;
-                }
-            }
-            DumbHook.Import.VirtualProtect(recvptr, 1, oldProt, out oldProt);
 
-            UnityEngine.Debug.Log(recvptr.ToString("X"));
-        }
-        catch (Exception ex)
-        {
-            UnityEngine.Debug.Log(ex.Message);
+            }
+
+            yield return new WaitForSeconds(0.01f);
+
         }
     }
-
-    private unsafe void SendP2PHook(bool set)
-    {
-        MethodInfo p2p_req = typeof(Facepunch.Steamworks.Networking).GetMethod("SendP2PPacket", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new Type[] { typeof(ulong), typeof(byte[]), typeof(int), typeof(Networking.SendType), typeof(int) }, null);
-        RuntimeHelpers.PrepareMethod(p2p_req.MethodHandle);
-        IntPtr recvptr = p2p_req.MethodHandle.GetFunctionPointer();
-        DumbHook.Import.VirtualProtect(recvptr, 1, 0x40, out uint oldProt);
-        if (set == true)
-        {
-            {
-                byte* ptr = (byte*)recvptr;
-                *(ptr) = 0xc3;
-            }
-        }
-        else
-        {
-            {
-                byte* ptr = (byte*)recvptr;
-                *(ptr) = 0x55;
-            }
-        }
-        DumbHook.Import.VirtualProtect(recvptr, 1, oldProt, out oldProt);
-        UnityEngine.Debug.Log(recvptr.ToString("X"));
-    }
-
-    [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-    private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-    [DllImport("kernel32.dll")]
-    public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-    private unsafe void P2PUpdate(bool set)
+    public void UpdateAmbient()
     {
 
+        RenderSettings.ambientMode = AmbientMode.Flat;
+        RenderSettings.ambientLight = (ESP.свет ? youabitch : youabitch1);
+        RenderSettings.ambientIntensity = 1f;
+
 
 
     }
+    private static UnityEngine.Color youabitch = new UnityEngine.Color(0.9f, 0.9f, 0.9f, 0.9f);
+    private static UnityEngine.Color youabitch1 = new UnityEngine.Color(0.2f, 0.2f, 0.2f, 0.2f);
+    public void UpdateAmbientTrampoline()
+    {
+        int a = 12;
+        int b = 9;
+        int c = 12 * 9 - 4;
+        int d = c * a - 15;
+        int e = d + a;
+        int f = b + c;
+        a = b + 12;
+        b = c - 4;
+        d = a + b;
+        e = a + c + d;
+    }
+
     public static Color32 TargetColor = new Color32(255, 255, 255, 255);
     public static Color32 ScientistColor = new Color32(255, 255, 255, 255);
     public static Color32 CollectablEspColor = new Color32(255, 255, 255, 255);
@@ -1167,89 +975,12 @@ public class HACK : MonoBehaviour
     public static Color32 WorldEspColor = new Color32(255, 255, 255, 255);
 
     public static Dictionary<string, Shader> dictShaders = new Dictionary<string, Shader> { };
-    private static readonly FieldInfo nig = typeof(BowWeapon).GetField("attackReady", BindingFlags.Instance | BindingFlags.NonPublic);
-    public static BufferList<BaseNetworkable> amnigga()
-    {
-        ListDictionary<uint, BaseNetworkable> listDictionary = (ListDictionary<uint, BaseNetworkable>)test11111.GetValue(BaseNetworkable.clientEntities);
-        return listDictionary.Values;
-    }
+    private static FieldInfo nig = typeof(BowWeapon).GetField("attackReady", BindingFlags.Instance | BindingFlags.NonPublic);
+   
     public static Shader chamShader1;
-    public static FieldInfo _multiMesh = null;
-    private IEnumerator chamstest()
-    {
-        while (true)
-        {
-            try
-            {
-                if (LocalPlayer.Entity != null && BaseEntityEx.IsValid(LocalPlayer.Entity) && CFG.Setting.cahh)
-                {
-                    if (_multiMesh == null)
-                    {
-                        _multiMesh = typeof(PlayerModel).GetField("_multiMesh", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
-                    }
-                    if (chamShader1 != null)
-                    {
-                        foreach (BasePlayer player_chams in BasePlayer.VisiblePlayerList)
-                        {
-                            SkinnedMultiMesh smm = (SkinnedMultiMesh)_multiMesh.GetValue(player_chams.playerModel);
-                            foreach (Renderer r in smm.Renderers)
-                            {
-                                if (r.name.Contains("hair") && player_chams != null && r != null && !player_chams.IsLocalPlayer() && !player_chams.IsSleeping() && smm != null && player_chams.IsAlive())
-                                {
-                                    if (CFG.Setting.cahh)
-                                    {
-                                        if (r.enabled == true)
-                                        {
-                                            r.enabled = false;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (r.enabled == false)
-                                        {
-                                            r.enabled = true;
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    if (CFG.Setting.cahh)
-                                    {
-                                        if (!dictShaders.ContainsKey(r.material.name))
-                                        {
-                                            dictShaders.Add(r.material.name, r.material.shader);
-                                        }
-
-                                        if (r.material.shader != chamShader1)
-                                        {
-                                            r.material.shader = chamShader1;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (dictShaders.ContainsKey(r.material.name))
-                                        {
-                                            if (r.material.shader == chamShader1)
-                                            {
-                                                r.material.shader = dictShaders[r.material.name];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-            }
-            catch (Exception)
-            {
-
-            }
-            yield return new WaitForSeconds(1f);
-        }
-    }
+    public static FieldInfo _multiMesh = null; 
+    [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+    static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
     private Projectile CreateProjectileBaseMelee(string prefabPath, Vector3 pos, Vector3 forward, Vector3 velocity)
     {
         GameObject gameObject = GameManager.client.CreatePrefab(prefabPath, pos, Quaternion.LookRotation(forward), true);
@@ -1258,11 +989,11 @@ public class HACK : MonoBehaviour
             return null;
         }
         Projectile component = gameObject.GetComponent<Projectile>();
-        if (CFG.Setting.hhhh)
+        if (CFG.Aimbot.hhhh)
         {
             component.gravityModifier = 0f;
         }
-        if (CFG.Setting.uuyyttrrr)
+        if (CFG.Aimbot.uuyyttrrr)
         {
             component.thickness = 100;
         }
@@ -1288,28 +1019,6 @@ public class HACK : MonoBehaviour
         return CreateOrUpdateEntityTrampoline(info, size);
     }
 
-    private unsafe void tt(bool set)
-    {
-        MethodInfo envSync = typeof(EnvSync).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic, null, new Type[] { }, null);
-        System.Runtime.CompilerServices.RuntimeHelpers.PrepareMethod(envSync.MethodHandle);
-        IntPtr envPtr = envSync.MethodHandle.GetFunctionPointer();
-        DumbHook.Import.VirtualProtect(envPtr, 1, 0x40, out uint oldProt);
-        if (set == true)
-        {
-            {
-                byte* ptr = (byte*)envPtr;
-                *(ptr) = 0xc3;
-            }
-        }
-        else
-        {
-            {
-                byte* ptr = (byte*)envPtr;
-                *(ptr) = 0x55;
-            }
-        }
-        DumbHook.Import.VirtualProtect(envPtr, 1, oldProt, out oldProt);
-    }
     private BaseEntity CreateOrUpdateEntityTrampoline(ProtoBuf.Entity info, long size)
     {
         int a = 12;
@@ -1324,13 +1033,18 @@ public class HACK : MonoBehaviour
         e = a + c + d;
         return new BaseEntity(); //arbitrary return value
     }
+    DumbHook CreateOrUpdate;
+    DumbHook boredasf1;
+    DumbHook boredasf12;
+    DumbHook boredasf111111;
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr GetModuleHandle(string lpModuleName);
+    private static FieldInfo test11111 = typeof(BaseNetworkable.EntityRealm).GetField("entityList", BindingFlags.Instance | BindingFlags.NonPublic); public static Shader chamShader;
 
-    private readonly DumbHook CreateOrUpdate;
-    private DumbHook boredasf1;
-    private DumbHook boredasf111111;
-    private static readonly FieldInfo test11111 = typeof(BaseNetworkable.EntityRealm).GetField("entityList", BindingFlags.Instance | BindingFlags.NonPublic); public static Shader chamShader;
+    
 
-    private void Movement_NoclipTrampoline(InputState input, ModelState modelState)
+   
+    void Movement_NoclipTrampoline(InputState input, ModelState modelState)
     {
         int a = 12;
         int b = 9;
@@ -1343,48 +1057,22 @@ public class HACK : MonoBehaviour
         d = a + b;
         e = a + c + d;
     }
-    private void UpdateCameraTrampoline(Camera cam)
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
 
-    private DumbHook spin;
-    private readonly DumbHook boredaaaasf1;
     private void Start()
-    {
+    { base.StartCoroutine(this.MiscFuncs111());
+        base.StartCoroutine(this.MiscFuncs11());
+        base.StartCoroutine(this.MiscFuncs1());
+        StartCoroutine(Updating94415());
+        StartCoroutine(Updating9445());
+        StartCoroutine(Updating94145());
+        StartCoroutine(Updating94456());
+        StartCoroutine(gravityandwalk());
 
-        byte[] yeahhh111111 = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
-        spin = new DumbHook(typeof(BasePlayer), "SendClientTick", typeof(HACK), "SendClientTick", typeof(HACK), "SendClientTickTrampoline", yeahhh111111);
-
-        byte[] throwithardreee = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
-        shotgunspread1 = new DumbHook(typeof(ItemModProjectile), "GetIndexedSpreadScalar", typeof(HACK), "GetIndexedSpreadScalar", typeof(HACK), "GetIndexedSpreadScalarTrampoline", throwithardreee);
-        byte[] younigger = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x48, 0x83, 0xec, 0x08, 0x48, 0x8b, 0xf1 };
-        canaim1 = new DumbHook(typeof(PlayerWalkMovement), "CanSprint", typeof(HACK), "CanSprint", typeof(HACK), "CanSprintTrampoline", younigger);
-
-        byte[] noper = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x48, 0x83, 0xec, 0x08, 0x48, 0x8b, 0xf1 };
-        canaim = new DumbHook(typeof(BaseProjectile), "CanAim", typeof(HACK), "CanAim", typeof(HACK), "CanAimTrampoline", noper);
-
-        base.StartCoroutine(hook());
-        base.StartCoroutine(hok());
-        base.StartCoroutine(heal());
-        base.StartCoroutine(brr());
-        base.StartCoroutine(winer());
-        base.StartCoroutine(hoook());
-        base.StartCoroutine(gravityandwalk());
-
+        StartCoroutine(newsilentmeleefarm());
         byte[] yeahhh11111 = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x57, 0x48, 0x83, 0xec, 0x28 };
         boredasf111111 = new DumbHook(typeof(BaseMelee), "CreateProjectile", typeof(HACK), "CreateProjectileBaseMelee", typeof(HACK), "CreateProjectileBaseMeleeTrampoline", yeahhh11111);
         boredasf111111.Hook();
-
+   
 
         byte[] canJumpBytes = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x48, 0x83, 0xec, 0x08, 0x48, 0x8b, 0xf1 };
         jump = new DumbHook(typeof(PlayerWalkMovement), "CanJump", typeof(HACK), "CanJump", typeof(HACK), "CanJumpTrampoline", canJumpBytes);
@@ -1392,314 +1080,284 @@ public class HACK : MonoBehaviour
 
         byte[] CanAttackBytes = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x48, 0x83, 0xec, 0x08, 0x48, 0x8b, 0xf1 };
         canAttack = new DumbHook(typeof(BasePlayer), "CanAttack", typeof(HACK), "CanAttack", typeof(HACK), "CanAttackTrampoline", CanAttackBytes);
-        canAttack.Hook();
 
+        canAttack.Hook();
 
         byte[] orig9 = new byte[]
 {
            0x55, 0x48, 0x8b, 0xec, 0x48, 0x83, 0xec, 0x20, 0xf3, 0x0f, 0x11, 0x4d, 0xf0, 0x90
 };
-        proj = new DumbHook(typeof(global::BasePlayer), "SendProjectileAttack", typeof(HACK), "SendProjectileAttack", typeof(HACK), "SendProjectileAttackTrampoline", orig9);
-        proj.Hook();
-
+        this.proj = new DumbHook(typeof(global::BasePlayer), "SendProjectileAttack", typeof(HACK), "SendProjectileAttack", typeof(HACK), "SendProjectileAttackTrampoline", orig9);
+        this.proj.Hook();
 
         byte[] aimco = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
         aimcone = new DumbHook(typeof(BaseProjectile), "GetAimCone", typeof(HACK), "GetAimCone", typeof(HACK), "GetAimConeTrampoline", aimco);
 
-        byte[] gavu = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
+        byte[] gavu = { 0x55, 0x48, 0x8b, 0xec, 0x48, 0x83, 0xec, 0x20, 0xf3, 0x0f, 0x11, 0x4d, 0xf0, 0x90 };
         ggdsfdf = new DumbHook(typeof(BasePlayer), "GetSpeed", typeof(HACK), "GetSpeed", typeof(HACK), "GetSpeedTrampoline", gavu);
-
 
         byte[] byt = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x57, 0x48, 0x83, 0xec, 0x28 };
         projshit = new DumbHook(typeof(BaseProjectile), "CreateProjectile", typeof(HACK), "CreateProjectile", typeof(HACK), "CreateProjectileTrampoline", byt);
         projshit.Hook();
+       
 
 
         byte[] fuckyou = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
         resetter = new DumbHook(typeof(TOD_Sky), "UpdateAmbient", typeof(HACK), "UpdateAmbient", typeof(HACK), "UpdateAmbientTrampoline", fuckyou);
 
+
+        byte[] noper = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x48, 0x83, 0xec, 0x08, 0x48, 0x8b, 0xf1 };
+        canaim = new DumbHook(typeof(BaseProjectile), "CanAim", typeof(HACK), "CanAim", typeof(HACK), "CanAimTrampoline", noper);
+
+        byte[] younigger = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x48, 0x83, 0xec, 0x08, 0x48, 0x8b, 0xf1 };
+        canaim1 = new DumbHook(typeof(PlayerWalkMovement), "CanSprint", typeof(HACK), "CanSprint", typeof(HACK), "CanSprintTrampoline", younigger);
+
         byte[] yeahhh1 = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
         boredasf1 = new DumbHook(typeof(Projectile), "FixedUpdate", typeof(HACK), "FixedUpdate", typeof(HACK), "UpdateTrampoline", yeahhh1);
+        
+        //  byte[] spread111 = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
+        //   spread1 = new DumbHook(typeof(Projectile), "DoHit", typeof(Misc), "DoHit", typeof(Misc), "DoHitTrampoline", spread111);
+        //  spread1.Hook();
+
+        byte[] yeahhh111111 = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
+        boredasf111111 = new DumbHook(typeof(BasePlayer), "SendClientTick", typeof(HACK), "SendClientTick", typeof(HACK), "SendClientTickTrampoline", yeahhh111111);
+        boredasf111111.Hook();
 
 
 
-
-
-
-
-        byte[] dasdasdasdasd = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
-        dfdsf1 = new DumbHook(typeof(Client), "OnRequestUserInformation", typeof(HACK), "OnRequestUserInformation", typeof(HACK), "OnRequestUserInformationTrampoline", dasdasdasdasd);
-        dfdsf1.Hook();
-        byte[] ffffffff = { 0x55, 0x48, 0x8b, 0xec, 0x56, 0x57, 0x41, 0x56, 0x48, 0x83, 0xec, 0x08 };
-        ffffff = new DumbHook(typeof(AppDomain), "GetAssemblies", typeof(HACK), "GetAssemblies", typeof(HACK), "GetAssembliesTrampoline", ffffffff);
-
-    }
-
-    private DumbHook ffffff;
-    public Assembly[] GetAssemblies()
-    {
-        bool refOnly = false;
-        MethodInfo nGetAssemblies = typeof(AppDomain).GetMethod("GetAssemblies", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-        Assembly[] assemblies = (Assembly[])nGetAssemblies.Invoke(null, new object[] { refOnly });
-        int index = Array.IndexOf(assemblies, "ApexAI");
-        assemblies[index] = null;
-        return assemblies;
-    }
-
-
-    public Assembly[] GetAssembliesTrampoline()
-    {
-
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-        return gameObject.GetComponent<AppDomain>().GetAssemblies();
-    }
-    public static void noclipTrampoline()
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
-    private bool CanSprint()
-    {
-        return true;
-    }
-    private bool CanSprintTrampoline()
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-        return true;
-    }
-
-    public static uint dev;
-    public static string faked = "vk.com/Deft.solutions - Privat Hack";
-    private DumbHook dfdsf1;
-    private readonly DumbHook dfdsf;
-    private readonly DumbHook dfsffdsf;
-
-    private void OnRequestUserInformation(Message packet)
-    {
-        LoadingScreen.Show();
-        if (SingletonComponent<LoadingScreen>.Instance)
+        if (mTex == null)
         {
-            SingletonComponent<LoadingScreen>.Instance.UpdateFromServer("CONNECTING", "NEGOTIATING CONNECTION");
+            mTex = new Texture2D(1, 1);
+
+            byte[] rawData = {
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+    0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x4B, 0x00, 0x00, 0x00, 0x4B,
+    0x08, 0x03, 0x00, 0x00, 0x00, 0x0F, 0x90, 0x8A, 0xD8, 0x00, 0x00, 0x01,
+    0x74, 0x50, 0x4C, 0x54, 0x45, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0xFF,
+    0x00, 0x00, 0xFF, 0x00, 0x00, 0x56, 0xFC, 0xB8, 0xAE, 0x00, 0x00, 0x00,
+    0x7B, 0x74, 0x52, 0x4E, 0x53, 0x00, 0x00, 0x02, 0x04, 0x06, 0x08, 0x0A,
+    0x0C, 0x0E, 0x10, 0x12, 0x14, 0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22,
+    0x24, 0x26, 0x28, 0x2A, 0x2C, 0x2E, 0x30, 0x32, 0x34, 0x36, 0x38, 0x3A,
+    0x3C, 0x3E, 0x40, 0x42, 0x44, 0x46, 0x48, 0x4A, 0x4C, 0x4E, 0x50, 0x52,
+    0x54, 0x56, 0x58, 0x5A, 0x5C, 0x5E, 0x60, 0x62, 0x64, 0x68, 0x6A, 0x6C,
+    0x70, 0x72, 0x74, 0x76, 0x78, 0x7A, 0x7C, 0x66, 0x7E, 0x81, 0x83, 0x85,
+    0x87, 0x6E, 0x89, 0x8B, 0x8D, 0x8F, 0x91, 0x93, 0x95, 0x97, 0x99, 0x9B,
+    0x9D, 0x9F, 0xA1, 0xA3, 0xA5, 0xA7, 0xA9, 0xAB, 0xAD, 0xAF, 0xB1, 0xB3,
+    0xB5, 0xB7, 0xBB, 0xBD, 0xBF, 0xC1, 0xC3, 0xC5, 0xC7, 0xC9, 0xCB, 0xCD,
+    0xCF, 0xD1, 0xD3, 0xD5, 0xD9, 0xDB, 0xDD, 0xD7, 0xE1, 0xE3, 0xDF, 0xE7,
+    0xE9, 0xE5, 0xEB, 0xED, 0xEF, 0xF3, 0xF7, 0xFB, 0x93, 0x2A, 0x29, 0x0F,
+    0x00, 0x00, 0x06, 0x23, 0x49, 0x44, 0x41, 0x54, 0x58, 0x85, 0xAD, 0xD8,
+    0x67, 0x57, 0x22, 0x49, 0x14, 0x06, 0xE0, 0x1E, 0x07, 0x75, 0x40, 0x90,
+    0xEC, 0x10, 0x04, 0x25, 0x67, 0x90, 0x20, 0x41, 0x51, 0xC1, 0x44, 0x10,
+    0x4C, 0xA8, 0x04, 0x11, 0x03, 0x12, 0x44, 0xCC, 0x6B, 0x9A, 0xFD, 0xF3,
+    0x7B, 0x6F, 0x75, 0x0B, 0xA3, 0x8C, 0x3B, 0xB3, 0x67, 0xAB, 0xCE, 0x51,
+    0xFC, 0xE0, 0x79, 0xCE, 0xFB, 0xDE, 0x2A, 0xA0, 0xBB, 0x99, 0x2F, 0xBF,
+    0x5F, 0x43, 0xB8, 0xFE, 0xE0, 0xFF, 0x98, 0xDF, 0x28, 0x5F, 0x71, 0xF1,
+    0x78, 0x3C, 0xF2, 0xFA, 0x1B, 0xF1, 0x73, 0x0B, 0x1D, 0x1E, 0x6F, 0x78,
+    0x78, 0x78, 0x84, 0x5D, 0xF0, 0x17, 0x92, 0xFF, 0xE2, 0x7D, 0x66, 0x21,
+    0x04, 0xCC, 0xE8, 0xE8, 0xE8, 0xB7, 0xB7, 0x05, 0x7F, 0x03, 0x88, 0xDC,
+    0x7F, 0xB2, 0x86, 0x00, 0x1A, 0x19, 0x01, 0x86, 0xCF, 0x17, 0x08, 0xC6,
+    0xD8, 0x25, 0x10, 0xF0, 0xF9, 0x00, 0x42, 0x40, 0xDE, 0x27, 0xDA, 0xAF,
+    0x2C, 0x22, 0x8D, 0x7E, 0x43, 0x46, 0x28, 0x14, 0x89, 0x44, 0xE3, 0xB8,
+    0xE0, 0x55, 0x28, 0x44, 0x10, 0xB8, 0x4F, 0xB4, 0x41, 0xAB, 0x27, 0x8D,
+    0x09, 0x41, 0x11, 0x4B, 0x24, 0x12, 0x29, 0x2E, 0x78, 0x15, 0x83, 0x08,
+    0xDC, 0xA7, 0xDA, 0x80, 0x35, 0xF4, 0x95, 0x48, 0x08, 0x89, 0x25, 0x52,
+    0x99, 0x4C, 0x2E, 0x57, 0xB0, 0x4B, 0x2E, 0x97, 0xC9, 0xA4, 0xE0, 0x01,
+    0x47, 0xB4, 0x41, 0x8C, 0xF9, 0x28, 0xF1, 0x86, 0x39, 0x09, 0x20, 0xB9,
+    0x42, 0xA9, 0x9C, 0xF8, 0x0E, 0x4B, 0x85, 0xBF, 0x26, 0x94, 0x4A, 0x85,
+    0x1C, 0x38, 0x4E, 0x1B, 0x8C, 0xC6, 0x7C, 0xA4, 0x46, 0x46, 0xF9, 0x02,
+    0xA1, 0x08, 0x22, 0x01, 0x34, 0xF1, 0x5D, 0xA5, 0xD6, 0x68, 0xB4, 0xEC,
+    0xD2, 0x68, 0xD4, 0x2A, 0xF0, 0x14, 0x72, 0x08, 0x27, 0x12, 0x0A, 0xF8,
+    0xA3, 0x23, 0x1F, 0x31, 0xE6, 0x3D, 0x35, 0x3C, 0x02, 0xA1, 0x30, 0x93,
+    0x5C, 0x81, 0x90, 0x76, 0x72, 0x52, 0xA7, 0xD7, 0x4F, 0xE1, 0xD2, 0xEB,
+    0x75, 0x93, 0x93, 0x5A, 0xE4, 0x50, 0x1B, 0x17, 0x41, 0xB4, 0x8F, 0x3D,
+    0x99, 0xF7, 0xD4, 0xE8, 0x37, 0x0C, 0x25, 0x95, 0x81, 0xA4, 0xD6, 0x80,
+    0x33, 0x35, 0x6D, 0x30, 0x18, 0x8D, 0x26, 0x93, 0xC9, 0x68, 0x34, 0x18,
+    0xA6, 0xA7, 0xC0, 0xD3, 0xA8, 0x41, 0x93, 0x49, 0x31, 0x1A, 0xF4, 0x7C,
+    0x87, 0x31, 0x03, 0xD4, 0xB8, 0x44, 0x26, 0x57, 0xA2, 0x04, 0x90, 0xD1,
+    0x64, 0xB6, 0x58, 0xAC, 0x56, 0xAB, 0x0D, 0x7E, 0x2C, 0x16, 0xB3, 0xC9,
+    0x08, 0x1C, 0x6A, 0x4A, 0xB9, 0x4C, 0x32, 0x3E, 0x80, 0x31, 0xBF, 0xA0,
+    0x14, 0x13, 0x2A, 0x94, 0x0C, 0x00, 0xD9, 0xEC, 0x76, 0x87, 0xD3, 0xE9,
+    0x74, 0xC1, 0x8F, 0xC3, 0x6E, 0xB7, 0x01, 0x67, 0x40, 0x4D, 0x05, 0xD1,
+    0x06, 0x31, 0x66, 0x80, 0xC2, 0x50, 0x5A, 0x1D, 0x48, 0x16, 0x2B, 0x38,
+    0x2E, 0xB7, 0xC7, 0xEB, 0xF5, 0xF9, 0x7C, 0x5E, 0xAF, 0xC7, 0xED, 0x02,
+    0xCF, 0x6A, 0x01, 0x4D, 0xA7, 0xC5, 0x68, 0x03, 0x58, 0xCF, 0x82, 0x1D,
+    0x44, 0x4A, 0x0A, 0x14, 0x84, 0x9A, 0x36, 0x9A, 0xAD, 0x76, 0xA7, 0xCB,
+    0xE3, 0xF5, 0xCD, 0xF8, 0x03, 0x81, 0x60, 0x30, 0x18, 0x08, 0xF8, 0x67,
+    0x7C, 0x5E, 0x8F, 0xCB, 0x69, 0xB7, 0x9A, 0x8D, 0xD3, 0x10, 0x0D, 0x30,
+    0x29, 0x62, 0xB0, 0x9B, 0x1F, 0xAD, 0x21, 0x96, 0x82, 0x54, 0xD0, 0x0F,
+    0x42, 0x81, 0xE4, 0xF6, 0xFA, 0xFC, 0x81, 0x60, 0x28, 0x34, 0x1B, 0xC6,
+    0x35, 0x1B, 0x0A, 0x05, 0x03, 0x7E, 0x9F, 0xD7, 0x0D, 0x1A, 0x44, 0x83,
+    0x9E, 0x5C, 0xB2, 0x11, 0xDE, 0xD0, 0x7B, 0x0B, 0x1B, 0xF2, 0x39, 0x4A,
+    0x37, 0x65, 0x34, 0xDB, 0x1C, 0x2E, 0x8F, 0xCF, 0x1F, 0x04, 0x27, 0x12,
+    0x8D, 0xC6, 0x70, 0x45, 0xA3, 0x11, 0xF0, 0x82, 0x7E, 0x9F, 0xC7, 0xE5,
+    0xB0, 0x99, 0x8D, 0x53, 0x3A, 0x0E, 0xE3, 0xF7, 0x5B, 0x72, 0x16, 0x52,
+    0x63, 0x22, 0x89, 0x0C, 0x0A, 0x02, 0x65, 0xB1, 0x39, 0xDD, 0x28, 0x01,
+    0x34, 0x37, 0x1F, 0x8F, 0x2F, 0xE0, 0x8A, 0xC7, 0xE7, 0xE7, 0x80, 0x43,
+    0xCD, 0xED, 0xB4, 0x59, 0x10, 0xFB, 0xAE, 0x94, 0x49, 0xE0, 0x9C, 0x01,
+    0xF6, 0xB3, 0x45, 0x1A, 0x8A, 0xC4, 0x32, 0x05, 0xCC, 0x8A, 0x50, 0x1E,
+    0x5F, 0x60, 0x31, 0x1C, 0x89, 0xCD, 0xC5, 0x97, 0x12, 0xC9, 0xE5, 0xE5,
+    0x95, 0x95, 0x95, 0xE5, 0xE5, 0x64, 0x62, 0x29, 0x3E, 0x17, 0x8B, 0x84,
+    0x17, 0x03, 0x3E, 0x0F, 0xC1, 0x60, 0x66, 0x0A, 0x99, 0x58, 0xD4, 0x6F,
+    0xC9, 0xF4, 0x62, 0xE1, 0xDC, 0x27, 0xD4, 0x1C, 0x35, 0x13, 0x0C, 0xAD,
+    0x46, 0x41, 0x4A, 0xAE, 0xAC, 0xAD, 0xA7, 0x52, 0xE9, 0x74, 0x3A, 0x95,
+    0x5A, 0x5F, 0x5B, 0x49, 0x82, 0x16, 0x5D, 0x0D, 0x05, 0x67, 0x38, 0x4C,
+    0x3D, 0x81, 0xF3, 0xEF, 0x05, 0x63, 0xDE, 0x62, 0x91, 0x86, 0x2A, 0xAD,
+    0xDE, 0x60, 0x26, 0xD4, 0x6C, 0x24, 0x86, 0xD2, 0x7A, 0x3A, 0x93, 0xDD,
+    0xC8, 0xE1, 0xDA, 0xC8, 0x66, 0xD2, 0xEB, 0xA8, 0xC5, 0x22, 0xB3, 0x04,
+    0x33, 0x1B, 0xF4, 0x5A, 0x15, 0x69, 0xF9, 0x16, 0x8C, 0xE9, 0xC5, 0x12,
+    0x4B, 0xA1, 0xA1, 0x6E, 0xDA, 0xC4, 0x51, 0x73, 0x0B, 0x09, 0x90, 0xB2,
+    0xB9, 0xFC, 0xE6, 0xD6, 0x36, 0xAE, 0xAD, 0xCD, 0x7C, 0x2E, 0x0B, 0x5A,
+    0x62, 0x61, 0x8E, 0xC3, 0x4C, 0xD3, 0x30, 0x32, 0x85, 0x54, 0xDC, 0x0B,
+    0xC6, 0xF4, 0x63, 0xB1, 0x0D, 0xAD, 0x0E, 0xB7, 0x8F, 0x50, 0xC9, 0xB5,
+    0x54, 0x26, 0xB7, 0xB9, 0xB5, 0xB3, 0x5B, 0xD8, 0xC3, 0x55, 0xD8, 0xDD,
+    0xD9, 0xDA, 0xCC, 0x65, 0x52, 0x6B, 0x49, 0x82, 0xF9, 0xDC, 0x0E, 0x2B,
+    0xDB, 0xB2, 0x1F, 0x8C, 0xE9, 0x4F, 0x0B, 0x62, 0x41, 0x43, 0xBB, 0xCB,
+    0x17, 0x08, 0x11, 0x2A, 0x9D, 0xCD, 0x6F, 0xED, 0x14, 0xF6, 0x0F, 0x8A,
+    0xA5, 0x52, 0xB9, 0x54, 0x2A, 0x1E, 0xEC, 0x17, 0x76, 0xB6, 0xF2, 0xD9,
+    0x34, 0xC1, 0x42, 0x01, 0x9F, 0xCB, 0x0E, 0x2D, 0x31, 0x58, 0x6F, 0x62,
+    0x0C, 0x9E, 0x2D, 0xDC, 0x44, 0x36, 0x96, 0xC9, 0xEA, 0xF4, 0xF8, 0x17,
+    0x57, 0x63, 0x48, 0x6D, 0x6C, 0x6E, 0x17, 0xF6, 0x8B, 0xE5, 0xCA, 0x61,
+    0x15, 0xD7, 0x61, 0xA5, 0x5C, 0xDC, 0x2F, 0x6C, 0x6F, 0x6E, 0x20, 0x16,
+    0x5B, 0x5D, 0xF4, 0x7B, 0x9C, 0x56, 0x13, 0x17, 0x0C, 0xB6, 0x12, 0xCF,
+    0x18, 0x43, 0x2A, 0xF2, 0xC7, 0xB8, 0x58, 0x16, 0x3B, 0x34, 0x0C, 0x47,
+    0xE3, 0x09, 0xA4, 0x76, 0xF6, 0x0E, 0x4A, 0x95, 0xEA, 0x51, 0xED, 0x18,
+    0x57, 0xED, 0xA8, 0x5A, 0x29, 0x1D, 0xEC, 0xED, 0x20, 0x96, 0x88, 0x47,
+    0xC3, 0xD0, 0xD2, 0x6E, 0xE1, 0x82, 0x8D, 0xF1, 0x49, 0x49, 0x86, 0x54,
+    0x14, 0x08, 0xC5, 0xB0, 0x89, 0x24, 0x96, 0xD7, 0x0F, 0x0D, 0x97, 0x56,
+    0x52, 0x59, 0xA0, 0x8A, 0xE5, 0xEA, 0xD1, 0xF1, 0xC9, 0xE9, 0x59, 0xBD,
+    0x5E, 0x3F, 0x3B, 0x3D, 0x39, 0x3E, 0xAA, 0x96, 0x8B, 0x80, 0x65, 0x53,
+    0x2B, 0x4B, 0xD0, 0xD2, 0xEF, 0x25, 0xC1, 0x60, 0x2B, 0xC5, 0x42, 0x01,
+    0x29, 0x49, 0x2C, 0xAE, 0xA2, 0x6E, 0x1A, 0xA7, 0x15, 0x0C, 0xC7, 0xE2,
+    0xC9, 0xF5, 0x4C, 0x7E, 0x7B, 0xAF, 0x58, 0xA9, 0xD6, 0x4E, 0xCE, 0xCE,
+    0x1B, 0xCD, 0x56, 0xAB, 0xD5, 0x6C, 0x9C, 0x9F, 0x9D, 0xD4, 0xAA, 0x95,
+    0xE2, 0xDE, 0x76, 0x3E, 0xB3, 0x9E, 0x8C, 0xC7, 0x20, 0x18, 0x4C, 0x6C,
+    0x5A, 0xC7, 0x95, 0x64, 0x2D, 0xB2, 0x8B, 0x58, 0x51, 0xAB, 0x37, 0x5A,
+    0x1C, 0x1E, 0x36, 0x56, 0x3A, 0xB7, 0x55, 0x38, 0x28, 0x57, 0x6B, 0xA7,
+    0xF5, 0x46, 0xAB, 0x7D, 0xD1, 0xE9, 0x74, 0x2E, 0xDA, 0xAD, 0x46, 0xFD,
+    0xB4, 0x56, 0x2D, 0x1F, 0x14, 0xB6, 0x72, 0x69, 0x36, 0x98, 0xC7, 0x61,
+    0x31, 0xEA, 0xB5, 0xA4, 0x24, 0xD9, 0x49, 0xB4, 0x70, 0x17, 0xD9, 0x8A,
+    0x36, 0xA7, 0x37, 0x30, 0x1B, 0x85, 0x58, 0xD0, 0x70, 0xBF, 0x84, 0x54,
+    0xB3, 0xDD, 0xB9, 0xEC, 0x76, 0xAF, 0xBA, 0xDD, 0xCB, 0x4E, 0xBB, 0x89,
+    0x58, 0x69, 0x1F, 0x5A, 0x42, 0xB0, 0xE8, 0x6C, 0xC0, 0x0B, 0x67, 0x8C,
+    0x94, 0xC4, 0x9D, 0x24, 0x16, 0x7B, 0x50, 0x65, 0x4A, 0xF5, 0x24, 0x57,
+    0x91, 0x8B, 0x55, 0xAC, 0x1C, 0x9D, 0xD4, 0x9B, 0x17, 0xD7, 0xDD, 0xAB,
+    0x9B, 0x9B, 0xDB, 0x9B, 0x9B, 0xAB, 0xEE, 0xF5, 0x45, 0xB3, 0x7E, 0x72,
+    0x54, 0x29, 0x72, 0xC1, 0xB8, 0x92, 0x93, 0x6A, 0x1C, 0x18, 0x39, 0x15,
+    0xC4, 0x22, 0xE3, 0xD2, 0xE8, 0x70, 0x17, 0x67, 0x42, 0x91, 0xF9, 0xC4,
+    0x5A, 0x26, 0xBF, 0xB3, 0x5F, 0xAE, 0x1E, 0x9F, 0x35, 0xDA, 0xD7, 0xDD,
+    0xBB, 0xDB, 0xFB, 0xFB, 0x87, 0xFB, 0xFB, 0xDB, 0xBB, 0xEE, 0x75, 0xBB,
+    0x71, 0x76, 0x5C, 0x2D, 0xEF, 0xEF, 0xE4, 0x33, 0x6B, 0x89, 0xF9, 0x48,
+    0x68, 0x06, 0x77, 0x52, 0xA7, 0x21, 0x03, 0x7B, 0xB3, 0xC8, 0xE8, 0xC9,
+    0x89, 0xC0, 0x71, 0xB1, 0x15, 0x77, 0x0F, 0x20, 0xD6, 0x79, 0xAB, 0xD3,
+    0xBD, 0xFB, 0xEB, 0xE1, 0xF1, 0xE9, 0xE9, 0xE9, 0xF1, 0xE1, 0xAF, 0xBB,
+    0x6E, 0xA7, 0x75, 0x0E, 0xC1, 0x0E, 0x76, 0xD9, 0x92, 0x64, 0x60, 0x78,
+    0x2A, 0xDE, 0x86, 0x0F, 0x16, 0x79, 0x03, 0x91, 0xD1, 0x5B, 0xD9, 0x71,
+    0x2D, 0xA7, 0x36, 0xA0, 0xE2, 0x61, 0xED, 0xB4, 0xD1, 0xBE, 0xBC, 0xBA,
+    0x7D, 0x78, 0x7A, 0x7E, 0x79, 0x79, 0x79, 0x7E, 0x7A, 0xB8, 0xBD, 0xBA,
+    0x6C, 0x37, 0x4E, 0x6B, 0x87, 0x50, 0x72, 0x23, 0xB5, 0xCC, 0x0E, 0xCC,
+    0x4A, 0x86, 0x4F, 0xDE, 0x46, 0x60, 0xE1, 0xA9, 0x67, 0xB7, 0x71, 0x8A,
+    0x58, 0xE1, 0xD8, 0xC2, 0x72, 0x2A, 0xB7, 0xBD, 0x57, 0x82, 0x8A, 0xCD,
+    0x8B, 0xEE, 0xCD, 0xFD, 0xE3, 0xF3, 0xCB, 0xEB, 0xEB, 0xEB, 0xCB, 0xF3,
+    0xE3, 0xFD, 0x4D, 0xF7, 0xA2, 0x09, 0x25, 0x4B, 0x7B, 0xDB, 0xB9, 0xD4,
+    0xF2, 0x42, 0x2C, 0x4C, 0xAC, 0xA9, 0xB7, 0x8D, 0xFC, 0x3A, 0xC4, 0xF4,
+    0x8F, 0x04, 0x9E, 0x54, 0x3C, 0x5D, 0x0B, 0x30, 0x7A, 0x62, 0xD5, 0xA1,
+    0xE2, 0xCD, 0xFD, 0xD3, 0xCB, 0xEB, 0x8F, 0x1F, 0x3F, 0x5E, 0x5F, 0x9E,
+    0xC0, 0xEA, 0xB4, 0xEA, 0xAC, 0x95, 0x5E, 0x59, 0xC0, 0x13, 0x86, 0xA7,
+    0xB5, 0x7F, 0x28, 0x7A, 0x96, 0x0A, 0x2C, 0x9B, 0xAB, 0x6F, 0x95, 0x89,
+    0x85, 0x15, 0xC1, 0xFA, 0x1B, 0x2D, 0x28, 0x49, 0xAC, 0x72, 0xDF, 0x72,
+    0xC1, 0xA1, 0xD0, 0xAA, 0x06, 0x2C, 0x2A, 0xB9, 0x28, 0xCE, 0x8B, 0xE6,
+    0x3E, 0xD2, 0x3D, 0x5F, 0x54, 0xCF, 0x3D, 0xBD, 0xF7, 0x23, 0xCD, 0xCF,
+    0x09, 0x9A, 0x9F, 0x5F, 0x34, 0x3F, 0x57, 0xA9, 0x7E, 0xDE, 0xD3, 0xFC,
+    0x1E, 0xA2, 0xF9, 0xFD, 0x48, 0xF3, 0x7B, 0x9B, 0xEA, 0xF5, 0x04, 0xCD,
+    0xEB, 0x1C, 0xAA, 0xD7, 0x5F, 0x34, 0xAF, 0x0B, 0xA9, 0x5E, 0xAF, 0xD2,
+    0xBC, 0x8E, 0xA6, 0x7A, 0x7D, 0x4F, 0xF3, 0xBE, 0x83, 0xEA, 0xFD, 0x10,
+    0xD5, 0xFB, 0x34, 0x9A, 0xF7, 0x8F, 0x54, 0xEF, 0x6B, 0xA9, 0xDE, 0x6F,
+    0x53, 0x7D, 0x0E, 0x40, 0xF5, 0xF9, 0x04, 0xD5, 0xE7, 0x26, 0x5F, 0x68,
+    0x3E, 0xCF, 0xF9, 0x42, 0xF5, 0x39, 0xD3, 0xCF, 0xDA, 0xFF, 0x7E, 0xFE,
+    0xD5, 0xD3, 0xA8, 0x3C, 0x97, 0x63, 0x35, 0x5A, 0xCF, 0x0B, 0x89, 0x46,
+    0xED, 0x39, 0x66, 0xDF, 0xA3, 0xF1, 0x7C, 0xF5, 0x67, 0xF1, 0xCF, 0x9E,
+    0xFB, 0xFE, 0x03, 0x69, 0xDA, 0xC6, 0xAE, 0xB6, 0x8F, 0xD5, 0xAC, 0x00,
+    0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82
+};
+
+            mTex.LoadImage(rawData);
         }
-        if (packet.peer.write.Start())
+      
+    }
+    DumbHook drawImg;
+   
+
+    public static PlayerWalkMovement movement1;
+  
+    internal void SendClientTick(PlayerTick tick)
+    {
+        System.Random rand = new System.Random();
+
+
+        tick.inputState = gameObject.GetComponent<BasePlayer>().input.state.current;
+        tick.position = base.transform.position;
+        tick.eyePos = gameObject.GetComponent<BasePlayer>().eyes.position;
+        if (menu.spin)
         {
-            packet.peer.write.PacketID(Message.Type.GiveUserInformation);
-            packet.peer.write.UInt8(228);
-            packet.peer.write.UInt64(Client.Steam.SteamId);
-            packet.peer.write.UInt32(dev);
-            packet.peer.write.String(gameObject.GetComponent<Client>().GetOSName());
-            packet.peer.write.String(CFG.Setting.spoof ? CFG.Setting.faked : Client.Steam.Username);
-            packet.peer.write.String(SteamUtil.betaBranch);
-            Auth.Ticket ticket = gameObject.GetComponent<Client>().GetAuthTicket();
-            if (ticket == null)
+
+            menu.hh += menu.sped;
+            if (menu.hh > 360f)
             {
-                UnityEngine.Debug.LogWarning("No Token Data!");
-                Network.Net.cl.Disconnect("No Token Data", true);
-                return;
+                menu.hh = 0f;
             }
-            packet.peer.write.BytesWithSize(ticket.Data);
-            packet.peer.write.Send(new SendInfo(packet.connection));
+
+            tick.inputState.aimAngles = new Vector3(menu.hhh, menu.hh, 0);
+
         }
-    }
-    public static void yff()
-    {
-        int ggc = menu.df;
-        switch (ggc)
+        if (tick.modelState == null)
         {
-            case 0:
-                dev = 2062U;
-                break;
-            case 1:
-                dev = 2054U;
-                break;
-
+            tick.modelState = new ModelState();
         }
-    }
-    private void OnRequestUserInformationTrampoline(Message packet)
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
-
-
-
-
-    public bool ShouldReceiveVoice()
-    {
-        return true;
-    }
-    public bool ShouldReceiveVoiceTrampoline()
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-        return false;
-    }
-    protected void StartAttackCooldown(float cooldown)
-    {
-        if (menu.fast)
+        gameObject.GetComponent<BasePlayer>().modelState.CopyTo(tick.modelState);
+        if (Network.Net.cl.write.Start())
         {
-            Item activeItem = LocalPlayer.Entity.Belt.GetActiveItem();
-
-            if (activeItem != null && (activeItem.info.shortname.Contains("hammer")))
+            Network.Net.cl.write.PacketID(Network.Message.Type.Tick);
+            tick.WriteToStreamDelta(Network.Net.cl.write, gameObject.GetComponent<BasePlayer>().lastSentTick);
+            Network.Net.cl.write.Send(new Network.SendInfo(true)
             {
-                cooldown = cooldown * CFG.Setting.dfd;
-            }
+                priority = Network.Priority.Immediate
+            });
         }
-
-        StartAttackCooldownTrampoline(cooldown);
+        gameObject.GetComponent<BasePlayer>().lastSentTick = tick.Copy();
     }
 
-    protected void StartAttackCooldownTrampoline(float cooldown)
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
-
-    private void SendClientTick()
-    {
-
-        System.Random rand1 = new System.Random();
-
-        localplayer.lastSentTickTime = Time.realtimeSinceStartup;
-        using (PlayerTick playerTick = Pool.Get<PlayerTick>())
-        {
-            Item activeItem = localplayer.Belt.GetActiveItem();
-            playerTick.activeItem = ((activeItem == null) ? 0U : activeItem.uid);
-            playerTick.inputState = localplayer.input.state.current;
-            playerTick.position = base.transform.position;
-            playerTick.eyePos = localplayer.eyes.position;
-            if (playerTick.modelState == null)
-            {
-                playerTick.modelState = Pool.Get<ModelState>();
-                playerTick.modelState.onground = true;
-            }
-            if (CFG.Setting.govno2 && !LocalPlayer.Entity.IsSleeping())
-            {
-                playerTick.inputState.buttons = 1;
-            }
-
-            if (CFG.Setting.spin)
-            {
-
-                menu.hh += CFG.Setting.sped;
-                if (menu.hh > 360f)
-                {
-                    menu.hh = 0f;
-                }
-
-                playerTick.inputState.aimAngles = new Vector3(menu.hhh, menu.hh, 0);
-
-
-            }
-
-            if (playerTick.modelState != null)
-            {
-                playerTick.modelState.CopyTo(playerTick.modelState);
-            }
-            if (Net.cl.write.Start())
-            {
-                Net.cl.write.PacketID(Message.Type.Tick);
-                playerTick.WriteToStreamDelta(Net.cl.write, localplayer.lastSentTick);
-                Net.cl.write.Send(new SendInfo(Net.cl.Connection)
-                {
-                    priority = Priority.Immediate
-                });
-            }
-            if (Net.cl.IsRecording)
-            {
-                byte[] array = playerTick.ToProtoBytes();
-                Net.cl.ManualRecordPacket(15, array, array.Length);
-            }
-            if (localplayer.lastSentTick == null)
-            {
-                localplayer.lastSentTick = Pool.Get<PlayerTick>();
-            }
-            playerTick.CopyTo(localplayer.lastSentTick);
-        }
-    }
-
-    private void SendClientTickTrampoline()
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
-
-
-
-    public static void debugcamera()
-    {
-        if (SingletonComponent<CameraMan>.Instance == null)
-        {
-            GameManager.client.CreatePrefab("assets/bundled/prefabs/system/debug/debug_camera.prefab", default(Vector3), default(Quaternion), true);
-        }
-        else
-        {
-            SingletonComponent<CameraMan>.Instance.enabled = true;
-        }
-        if (!Client.IsPlayingDemo)
-        {
-            LocalPlayer.Entity.OnViewModeChanged();
-        }
-    }
-    public static void debugcameraTrampoline()
+    internal void SendClientTickTrampoline(PlayerTick tick)
     {
         int a = 12;
         int b = 9;
@@ -1712,80 +1370,11 @@ public class HACK : MonoBehaviour
         d = a + b;
         e = a + c + d;
     }
-    public void UpdateAmbient()
-    {
-        if (CFG.Setting.свет)
-        {
-            RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = youabitch;
-            RenderSettings.ambientIntensity = 1f;
-        }
-        if (!CFG.Setting.свет)
-        {
-            float saturation = gameObject.GetComponent<TOD_Sky>().Ambient.Saturation;
-            float num = Mathf.Lerp(gameObject.GetComponent<TOD_Sky>().Night.AmbientMultiplier, gameObject.GetComponent<TOD_Sky>().Day.AmbientMultiplier, gameObject.GetComponent<TOD_Sky>().LerpValue);
-            TOD_AmbientType mode = gameObject.GetComponent<TOD_Sky>().Ambient.Mode;
-            if (mode != TOD_AmbientType.Color)
-            {
-                if (mode != TOD_AmbientType.Gradient)
-                {
-                    if (mode == TOD_AmbientType.Spherical)
-                    {
-                        UnityEngine.Color ambientLight = TOD_Util.AdjustRGB(gameObject.GetComponent<TOD_Sky>().AmbientColor, num, saturation);
-                        RenderSettings.ambientMode = AmbientMode.Skybox;
-                        RenderSettings.ambientLight = ambientLight;
-                        RenderSettings.ambientIntensity = num;
-                        RenderSettings.ambientProbe = gameObject.GetComponent<TOD_Sky>().RenderToSphericalHarmonics(num, saturation);
-                    }
-                }
-                else
-                {
-                    UnityEngine.Color ambientGroundColor = TOD_Util.AdjustRGB(gameObject.GetComponent<TOD_Sky>().AmbientColor, num, saturation);
-                    UnityEngine.Color ambientEquatorColor = TOD_Util.AdjustRGB(gameObject.GetComponent<TOD_Sky>().SampleEquatorColor(), num, saturation);
-                    UnityEngine.Color ambientSkyColor = TOD_Util.AdjustRGB(gameObject.GetComponent<TOD_Sky>().SampleSkyColor(), num, saturation);
-                    RenderSettings.ambientMode = AmbientMode.Trilight;
-                    RenderSettings.ambientSkyColor = ambientSkyColor;
-                    RenderSettings.ambientEquatorColor = ambientEquatorColor;
-                    RenderSettings.ambientGroundColor = ambientGroundColor;
-                    RenderSettings.ambientIntensity = num;
-                }
-            }
-            else
-            {
-                UnityEngine.Color ambientLight2 = TOD_Util.AdjustRGB(gameObject.GetComponent<TOD_Sky>().AmbientColor, num, saturation);
-                RenderSettings.ambientMode = AmbientMode.Flat;
-                RenderSettings.ambientLight = ambientLight2;
-                RenderSettings.ambientIntensity = num;
-            }
-        }
-
-    }
-    private static UnityEngine.Color youabitch = new UnityEngine.Color(0.42f, 0.42f, 0.42f, 0.42f);
-    private static UnityEngine.Color youabitch1 = new UnityEngine.Color(0.1f, 0.1f, 0.1f, 0.1f);
-    public void UpdateAmbientTrampoline()
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
-
 
 
     private bool CanJump()
     {
-        if (CFG.Setting.asawersffd)
-        {
-            return true;
-        }
-        return UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().jumpTime >= 0.5f && (gameObject.GetComponent<PlayerWalkMovement>().ladder != null ||
-            (UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().groundTime <= 0.1f && UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().landTime >= 0.1f && (UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().landTime >= 0.2f || !gameObject.GetComponent<PlayerWalkMovement>().sliding)));
+        return true;
     }
 
     private bool CanJumpTrampoline()
@@ -1800,9 +1389,7 @@ public class HACK : MonoBehaviour
         num2 = num3 - 4;
         num4 = num + num2;
         num5 = num + num3 + num4;
-        return UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().jumpTime >= 0.5f && (gameObject.GetComponent<PlayerWalkMovement>().ladder != null ||
-            (UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().groundTime <= 0.1f && UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().landTime >= 0.1f && (UnityEngine.Time.time - gameObject.GetComponent<PlayerWalkMovement>().landTime >= 0.2f || !gameObject.GetComponent<PlayerWalkMovement>().sliding)));
-
+        return true;
     }
     public void SetNetworkPositionTrampoline(Vector3 vPos)
     {
@@ -1853,28 +1440,11 @@ public class HACK : MonoBehaviour
     {
         return true;
     }
-
-    public void OnLand(float fVelocity)
-    {
-        fVelocity = 0f;
-    }
-
-    public void OnLandTrampoline(float fVelocity)
-    {
-        int a = 12;
-        int b = 9;
-        int c = 12 * 9 - 4;
-        int d = c * a - 15;
-        int e = d + a;
-        int f = b + c;
-        a = b + 12;
-        b = c - 4;
-        d = a + b;
-        e = a + c + d;
-    }
+   
+  
     public static float GetAimCone()
     {
-        return (CFG.Setting.cdddeee ? 0f : 1f);
+        return 0f;
     }
     public static float GetAimConeTrampoline()
     {
@@ -1892,11 +1462,7 @@ public class HACK : MonoBehaviour
     }
     public float GetSpeed(float running, float ducking)
     {
-        if (CFG.Setting.blats)
-        {
-            return CFG.Setting.speedhackspeed;
-        }
-        return Mathf.Lerp(Mathf.Lerp(2.8f, 5.5f, running), 1.7f, ducking);
+        return speedhackspeed;
     }
 
     public float GetSpeedTrampoline(float running, float ducking)
@@ -1912,7 +1478,7 @@ public class HACK : MonoBehaviour
         num2 = num3 - 4;
         num4 = num + num2;
         num5 = num + num3 + num4;
-        return Mathf.Lerp(Mathf.Lerp(2.8f, 5.5f, running), 1.7f, ducking); //arbitrary return value
+        return 0f; //arbitrary return value
     }
     public static float speedhackspeed = 6f;
 
@@ -1939,96 +1505,31 @@ public class HACK : MonoBehaviour
         }
         Projectile component = gameObject.GetComponent<Projectile>();
 
-
-        if (CFG.Setting.cvvcv && LocalPlayer.Entity != null)
+        BaseProjectile bp = LocalPlayer.Entity.GetHeldEntity().GetComponent<BaseProjectile>();
+        if (BaseEntityEx.IsValid(bp))
         {
-            Vector2 vector = new Vector2(Screen.width / 2, Screen.height / 2);
-            float num = 150f;
-            foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+           ItemDefinition bp1 = bp.primaryMagazine.ammoType;
+            if (bp1 != null)
             {
-                if (!CFG.Setting.friendsList.Contains(basePlayer.userID) && basePlayer != null && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !basePlayer.IsDead() && !basePlayer.IsSleeping())
+                ItemModProjectile test = bp1.GetComponent<ItemModProjectile>();
+                if (test != null)
                 {
-                    Vector3 positionBone = basePlayer.model.headBone.transform.position;
-                    if (!(positionBone == Vector3.zero))
+                    if (CFG.Aimbot.cdddeee)
                     {
-                        Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
-                        if (vector2.z > 0f)
-                        {
-                            Vector2 vector3 = new Vector2(vector2.x, Screen.height - vector2.y);
-                            float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
-                            if (num2 <= CFG.Setting.fov1 && num2 < num && basePlayer.IsAlive())
-                            {
-                                num = num2;
-                                HACK.localplayer = basePlayer;
-                            }
-                        }
+                        test.projectileSpread = 0f;
                     }
                 }
             }
-            if (HACK.localplayer != null && HACK.localplayer.IsAlive() && !HACK.localplayer.IsLocalPlayer())
-            {
-                int randomSpot = new System.Random().Next(199, 999999999);
-                int randomSpot2 = new System.Random().Next(1, 50);
-                typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(component, CFG.Setting.gggggg ? randomSpot2 : randomSpot);
-
-                component.transform.position = HACK.localplayer.model.rootBone.position + new Vector3(0f, 0.2f, 0f);
-            }
         }
-
-
-
-
-
-
-
-
-
-
-        if (CFG.Setting.dffs && LocalPlayer.Entity != null)
-        {
-            Vector2 vector4 = new Vector2(Screen.width / 2, Screen.height / 2);
-            float num3 = 150f;
-            foreach (BasePlayer basePlayer2 in BasePlayer.VisiblePlayerList)
-            {
-                if (!CFG.Setting.friendsList.Contains(basePlayer2.userID) && basePlayer2 != null && !basePlayer2.IsLocalPlayer() && basePlayer2.health > 0f && !basePlayer2.IsDead() && !basePlayer2.IsSleeping())
-                {
-                    Vector3 positionBone2 = basePlayer2.model.headBone.transform.position;
-                    if (!(positionBone2 == Vector3.zero))
-                    {
-                        Vector3 vector5 = MainCamera.mainCamera.WorldToScreenPoint(positionBone2);
-                        if (vector5.z > 0f)
-                        {
-                            Vector2 vector6 = new Vector2(vector5.x, Screen.height - vector5.y);
-                            float num4 = Mathf.Abs(Vector2.Distance(vector4, vector6));
-                            if (num4 <= CFG.Setting.fov1 && num4 < num3 && basePlayer2.IsAlive())
-                            {
-                                num3 = num4;
-                                HACK.localplayer = basePlayer2;
-                            }
-                        }
-                    }
-                }
-            }
-            if (HACK.localplayer != null && HACK.localplayer.IsAlive() && !HACK.localplayer.IsLocalPlayer())
-            {
-                int randomSpot = new System.Random().Next(199, 999999999);
-                int randomSpot2 = new System.Random().Next(1, 50);
-                typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(component, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-
-                component.transform.position = HACK.localplayer.model.headBone.position + new Vector3(0f, 0.05f, 0f);
-            }
-        }
-        if (CFG.Setting.vcgrrrr)
+    
+ 
+        if (CFG.Aimbot.vcgrrrr)
         {
             component.gravityModifier = 0f;
         }
-        if (CFG.Setting.sdfewewdff)
+        if (CFG.Aimbot.sdfewewdff)
         {
             component.thickness = 100f;
-        }
-        if (CFG.Setting.asdas)
-        {
-            component.thickness = 0.35f;
         }
         component.ricochetChance = 0f;
         Projectile.Modifier fastasfuckboi = Projectile.Modifier.Default;
@@ -2039,31 +1540,17 @@ public class HACK : MonoBehaviour
 
     public float GetIndexedSpreadScalar(int shotIndex, int maxShots)
     {
-        if (CFG.Setting.sfwewwww)
-        {
-            float time1;
-            if (shotIndex != 0)
-            {
-                float num = 0f / maxShots;
-                time1 = shotIndex * num;
-            }
-            else
-            {
-                time1 = UnityEngine.Random.Range(0f, 0f);
-            }
-            return 0f;
-        }
         float time;
-        if (shotIndex != -1)
+        if (shotIndex != 0)
         {
-            float num = 1f / maxShots;
-            time = shotIndex * num;
+            float num = 0f / (float)maxShots;
+            time = (float)shotIndex * num;
         }
         else
         {
-            time = UnityEngine.Random.Range(0f, 1f);
+            time = UnityEngine.Random.Range(0f, 0f);
         }
-        return gameObject.GetComponent<ItemModProjectile>().spreadScalar.Evaluate(time);
+        return 0f;
     }
     public float GetProjectileSpeed()
     {
@@ -2074,7 +1561,7 @@ public class HACK : MonoBehaviour
         }
 
 
-        int itemID = localplayer.GetHeldEntity().GetOwnerItemDefinition().itemid;
+        int itemID = (int)localplayer.GetHeldEntity().GetOwnerItemDefinition().itemid;
         float speed = 300f;
 
         switch (itemID)
@@ -2124,28 +1611,52 @@ public class HACK : MonoBehaviour
         }
 
         if (localplayer.GetHeldEntity().GetComponent<BaseProjectile>().IsSilenced())
-        {
             speed = speed * 0.745f;
-        }
 
         return speed;
     }
 
     public float GetIndexedSpreadScalarTrampoline(int shotIndex, int maxShots)
     {
-        int num = 12;
-        int num2 = 9;
-        int num3 = 104;
-        int num4 = num3 * num - 15;
-        num = num2 + 12;
-        num2 = num3 - 4;
-        num4 = num + num2;
-
+        int a = 12;
+        int b = 9;
+        int c = 12 * 9 - 4;
+        int d = c * a - 15;
+        int e = d + a;
+        int f = b + c;
+        a = b + 12;
+        b = c - 4;
+        d = a + b;
+        e = a + c + d;
         return 0f;
     }
 
-
-
+   
+    public static void debugcamera()
+    {
+        if (SingletonComponent<CameraMan>.Instance == null)
+        {
+            GameManager.client.CreatePrefab("assets/bundled/prefabs/system/debug/debug_camera.prefab", default(Vector3), default(Quaternion), true);
+        }
+        else
+        {
+            SingletonComponent<CameraMan>.Instance.enabled ^= true;
+        }
+        
+    }
+    public static void debugcameraTrampoline()
+    {
+        int a = 12;
+        int b = 9;
+        int c = 12 * 9 - 4;
+        int d = c * a - 15;
+        int e = d + a;
+        int f = b + c;
+        a = b + 12;
+        b = c - 4;
+        d = a + b;
+        e = a + c + d;
+    }
     public virtual bool CanAim()
     {
         return true;
@@ -2164,32 +1675,129 @@ public class HACK : MonoBehaviour
         e = a + c + d;
         return true;
     }
+    private bool CanSprint()
+    {
+        return true;
+    }
+    private bool CanSprintTrampoline()
+    {
+        int a = 12;
+        int b = 9;
+        int c = 12 * 9 - 4;
+        int d = c * a - 15;
+        int e = d + a;
+        int f = b + c;
+        a = b + 12;
+        b = c - 4;
+        d = a + b;
+        e = a + c + d;
+        return true;
+    }
 
+
+
+
+
+    
+   
+   
 
 
     public BaseNetworkable net;
-    private DumbHook jump;
-    private readonly DumbHook updateee;
-    private DumbHook canAttack;
-    private readonly DumbHook instantloot;
-    private readonly DumbHook hahyea;
-    private readonly DumbHook nofall;
-    private DumbHook aimcone;
-    private DumbHook ggdsfdf;
-    private DumbHook projshit;
-    private DumbHook proj;
-    private DumbHook shotgunspread1;
-    private readonly DumbHook seeinv;
-    private DumbHook resetter;
-    private readonly DumbHook holditems;
-    private readonly DumbHook debug;
-    private DumbHook canaim;
-    private DumbHook canaim1;
-    private readonly DumbHook build;
-    private readonly DumbHook spread1;
-    private readonly DumbHook namespoof;
+    public const String faked = "Alistair";
+    public const UInt64 SteamID_FakeNumber = 5783583285;
+    DumbHook jump;
+    DumbHook updateee;
+    DumbHook canAttack;
+    DumbHook instantloot;
+    DumbHook hahyea;
+    DumbHook nofall;
+    DumbHook aimcone;
+    DumbHook ggdsfdf;
+    DumbHook projshit;
+    DumbHook proj;
+    DumbHook shotgunspread1;
+    DumbHook seeinv;
+    DumbHook resetter;
+    DumbHook holditems;
+    DumbHook debug;
+    DumbHook canaim;
+    DumbHook canaim1;
+    DumbHook build;
+    DumbHook spread1;
+    DumbHook namespoof;
+
+    private IEnumerator gravityandwalk()
+    {
+        float oldshit = 0f;
+        float oldshit1 = 0f;
+        {
+            while (true)
+            {
+                try
+                {
+                    {
+                        if (CFG.Misc.HGHGH)
+                        {
+                            if (oldshit1 == 0f)
+                                oldshit1 = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit1 / 2f;
+                        }
+                        else
+                        {
+                            if (oldshit1 != 0f)
+                                HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit1;
+                        }
+                        if (UnityEngine.Input.GetKey(KeyCode.C) && CFG.Misc.walkon)
+                        {
+
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().SetPrivateField("flying", true);
+                            if (oldshit == 0f)
+                                oldshit = HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier;
+                            HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = 0f;
+
+                        }
+                        else
+                        {
+                            if (oldshit != 0f)
+                                HACK.localplayer.movement.GetComponent<PlayerWalkMovement>().gravityMultiplier = oldshit;
+                        }
+                       
+                        if (CFG.Misc.ahahahha)
+                        {
+                            Vector2 centerScreen = new Vector2(Screen.width / 2f, Screen.height / 2f);
+                            foreach (BasePlayer player in BasePlayer.visiblePlayerList)
+                            {
+
+                                if (player != null && !player.IsSleeping() && !player.IsDead())
+                                {
+                                    int distanceFromCenter = (int)(Vector2.Distance(MainCamera.mainCamera.WorldToScreenPoint(player.model.headBone.transform.position), centerScreen));
+                                    Vector3 onScreen = player.transform.position - MainCamera.mainCamera.transform.position;
+                                    if (!player.IsLocalPlayer() && player.health > 0f && Vector3.Dot(MainCamera.mainCamera.transform.TransformDirection(Vector3.forward), onScreen) > 0)
+                                        ;
+                                }
 
 
+                                int dist = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, player.transform.position);
+                                Vector3 screenPos = Players.GetScreenPos(player.transform.position);
+                                if (screenPos.z > 0f && player != null && !player.IsDead() && !player.IsSleeping() && dist <= player1 && UnityEngine.Input.GetKey(KeyCode.X))
+                                {
+                                    bool niggeribtch = false;
+                                    uint uiEntityId = 0;
+                                    Vector3 targetpos = LocalPlayer.Entity.transform.position = player.transform.position + new Vector3(0f, teleportheight, 0f);
+                                    LocalPlayer.Entity.ServerRPC("RPC_StartClimb", niggeribtch, targetpos, uiEntityId,null,null);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                yield return new WaitForSeconds(0f);
+            }
+        }
+    }
     public static float player1;
     public static float teleportheight;
     public void SendProjectileAttackTrampoline(PlayerProjectileAttack attack)
@@ -2206,21 +1814,33 @@ public class HACK : MonoBehaviour
         e = a + c + d;
 
     }
-
-
+   
+    public static void OnConsoleCommandfromServer(Message packet)
+    {
+        string text = packet.read.String();
+        bool flag = text.Length >= 6;
+        if (flag)
+        {
+            text.StartsWith("noclip");
+        }
+        else
+        {
+            packet.read.Position = 1L;
+        }
+    }
     public static BasePlayer getbaseplayertest()
     {
         BasePlayer result = null;
-        Vector2 vector = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        Vector2 vector = new Vector2((float)Screen.width / 2f, (float)Screen.height / 2f);
         float num = 10000f;
-        foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+        foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
         {
             if (!(basePlayer == null) && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !basePlayer.IsDead() && !basePlayer.IsDead())
             {
                 Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(basePlayer.transform.position);
-                Vector2 vector3 = new Vector2(vector2.x, Screen.height - vector2.y);
-                float num2 = Mathf.Abs(Vector2.Distance(new Vector2(Screen.width / 2, Screen.height / 2), new Vector2(vector2.x, Screen.height - vector2.y)));
-                if (num2 <= CFG.Setting.fov1 && num2 < num && basePlayer.IsAlive())
+                Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
+                float num2 = Mathf.Abs(Vector2.Distance(new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2)), new Vector2(vector2.x, (float)Screen.height - vector2.y)));
+                if (num2 <= menu.fov1 && num2 < num && basePlayer.IsAlive())
                 {
                     num = num2;
                     result = basePlayer;
@@ -2229,20 +1849,19 @@ public class HACK : MonoBehaviour
         }
         return result;
     }
-
     public static Vector3 target()
     {
         Vector3 result = Vector3.zero;
-        Vector2 vector = new Vector2(Screen.width / 2, Screen.height / 2);
+        Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
         float num = 7000f;
-        foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+        foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
         {
-            if (!CFG.Setting.friendsList.Contains(basePlayer.userID) && basePlayer != null && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !basePlayer.IsDead())
+            if (!friend.friendsList.Contains(basePlayer.userID) && basePlayer != null && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !basePlayer.IsDead())
             {
                 Vector3 positionBone;
-                if (CFG.Setting.bbccvvdd)
+                if (CFG.Aimbot.bbccvvdd)
                 {
-                    positionBone = basePlayer.model.rootBone.transform.position;
+                    positionBone = basePlayer.model.rootBone.transform.position ;
                 }
                 else
                 {
@@ -2253,9 +1872,9 @@ public class HACK : MonoBehaviour
                     Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
                     if (vector2.z > 0f)
                     {
-                        Vector2 vector3 = new Vector2(vector2.x, Screen.height - vector2.y);
+                        Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
                         float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
-                        if (num2 <= CFG.Setting.fov1 && num2 <= num)
+                        if (num2 <= menu.fov1 && num2 <= num)
                         {
                             result = positionBone;
                             num = num2;
@@ -2266,15 +1885,13 @@ public class HACK : MonoBehaviour
         }
         return result;
     }
-
-    public static BasePlayer targetaimkill;
     public static Vector3 giva()
     {
         Vector3 result = Vector3.zero;
-        Vector2 vector = new Vector2(Screen.width / 2, Screen.height / 2);
+        Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
         float num = 7000f;
-        foreach (BaseNpc b in BaseNpc.VisibleNpcList)
-        {
+        foreach (BaseNPC b in companent.ani)
+
             if (b != null && b.health > 0f)
             {
                 Vector3 positionBone;
@@ -2286,7 +1903,7 @@ public class HACK : MonoBehaviour
                     Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
                     if (vector2.z > 0f)
                     {
-                        Vector2 vector3 = new Vector2(vector2.x, Screen.height - vector2.y);
+                        Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
                         float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
                         if (num2 <= 720 && num2 <= num)
                         {
@@ -2297,35 +1914,15 @@ public class HACK : MonoBehaviour
                 }
 
             }
-        }
-
         return result;
     }
-    public static Vector3 tank()
-    {
-        Vector3 result = Vector3.zero;
-        Vector2 vector = new Vector2(Screen.width / 2, Screen.height / 2);
-        foreach (BradleyAPC b in companent.tank)
-        {
-            if (b != null && b.health > 0f)
-            {
-                Vector3 positionBone = b.myRigidBody.transform.position;
-
-
-
-
-                result = positionBone;
-            }
-        }
-
-        return result;
-    }
+   
     public static Vector3 targetheli()
     {
         Vector3 result = Vector3.zero;
-        Vector2 vector = new Vector2(Screen.width / 2, Screen.height / 2);
+        Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
+        float num = 9999f;
         foreach (BaseHelicopter b in companent.heli1)
-        {
             if (b != null && b.health > 0f)
             {
                 Vector3 positionBone = b.mainRotor.transform.position;
@@ -2342,171 +1939,205 @@ public class HACK : MonoBehaviour
                 }
                 result = positionBone;
             }
-        }
-
         return result;
     }
     private void FixedUpdate()
     {
         Projectile projectile = gameObject.GetComponent<Projectile>();
-        if (LocalPlayer.Entity != null && projectile != null)
+
+
+        if (projectile != null)
         {
 
+            projectile.UpdateVelocity(UnityEngine.Time.fixedDeltaTime);
+            if (CFG.Misc.cahh || CFG.Aimbot.qewqefdsf || CFG.Aimbot.BulletDropPrediction || CFG.Aimbot.dffs)
             {
-                projectile.UpdateVelocity(UnityEngine.Time.fixedDeltaTime);
-                if (CFG.Setting.cahh || CFG.Setting.qewqefdsf || CFG.Setting.BulletDropPrediction || CFG.Setting.dfertwdf)
+                HeldEntity HeldShits = LocalPlayer.Entity.GetHeldEntity();
+
+                if (BaseEntityEx.IsValid(HeldShits))
                 {
-                    HeldEntity HeldShits = LocalPlayer.Entity.GetHeldEntity();
-
-                    if (BaseEntityEx.IsValid(HeldShits))
+                    if (HeldShits is BaseMelee)
                     {
-                        if (HeldShits is BaseMelee)
+                        BaseMelee basemelee = LocalPlayer.Entity.GetHeldEntity().GetComponent<BaseMelee>();
+
+                        if (BaseEntityEx.IsValid(basemelee))
                         {
-                            BaseMelee basemelee = LocalPlayer.Entity.GetHeldEntity().GetComponent<BaseMelee>();
+                            Item item = basemelee.GetItem();
 
-                            if (BaseEntityEx.IsValid(basemelee))
+                            if (item != null)
                             {
-                                Item item = basemelee.GetItem();
-
-                                if (item != null)
+                                ItemModProjectile itemmodproj = item.info.GetComponent<ItemModProjectile>();
+                                if (itemmodproj != null)
                                 {
-                                    ItemModProjectile itemmodproj = item.info.GetComponent<ItemModProjectile>();
-                                    if (itemmodproj != null)
+                                    bool flag = UnityEngine.Input.GetKey(KeyCode.F) && CFG.Aimbot.dffs;
+                                    if (flag)
                                     {
-                                        int targetdistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.target());
-
-                                        int targetdistanceheli = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.tank());
-                                        int targetdistance2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.targetheli());
-                                        int targetdistance3 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.giva());
-
-
-                                        int projectiledistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, projectile.currentPosition);
+                                        if (LocalPlayer.Entity != null)
                                         {
-
-                                            if (UnityEngine.Input.GetKey(KeyCode.X))
+                                            BasePlayer result = null;
+                                            Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
+                                            float num = 7000f;
+                                            foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
                                             {
-                                                if (projectile.isAlive && projectile.isAuthoritative)
+                                                if (basePlayer != null && !basePlayer.IsLocalPlayer() && !basePlayer.IsDead())
                                                 {
-                                                    if (CFG.Setting.cahh)
+
+                                                    Vector3 positionBone;
+                                                    if (menu.ф)
                                                     {
-                                                        int randomSpot = new System.Random().Next(199, 999999999);
-                                                        int randomSpot2 = new System.Random().Next(1, 50);
-                                                        typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-
-                                                        Vector3 asd = (target() - projectile.currentPosition).normalized;
-                                                        Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
-                                                        projectile.currentVelocity = vector2;
+                                                        positionBone = basePlayer.model.rootBone.transform.position;
                                                     }
-                                                    if (CFG.Setting.dfertwdf)
+                                                    else
                                                     {
-                                                        int randomSpot = new System.Random().Next(199, 999999999);
-                                                        int randomSpot2 = new System.Random().Next(1, 50);
-                                                        typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-
-
-                                                        Vector3 asd = (tank() - projectile.currentPosition).normalized;
-                                                        Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
-                                                        projectile.currentVelocity = vector2;
-
+                                                        positionBone = basePlayer.model.headBone.transform.position + new Vector3(0f, 0.05f, 0f);
                                                     }
-
-                                                    if (CFG.Setting.qewqefdsf)
+                                                    if (!(positionBone == Vector3.zero))
                                                     {
-                                                        int randomSpot = new System.Random().Next(199, 999999999);
-                                                        int randomSpot2 = new System.Random().Next(1, 50);
-                                                        typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-                                                        Vector3 asd = (giva() - projectile.currentPosition).normalized;
-                                                        Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
-                                                        projectile.currentVelocity = vector2;
+                                                        Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
+                                                        if (vector2.z > 0f)
+                                                        {
+                                                            Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
+                                                            float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
+                                                            if (num2 <= menu.fov1 && num2 < num)
+                                                            {
+                                                                num = num2;
+                                                                result = basePlayer;
+                                                            }
+                                                        }
                                                     }
-                                                    if (CFG.Setting.BulletDropPrediction)
-                                                    {
-                                                        int randomSpot = new System.Random().Next(199, 999999999);
-                                                        int randomSpot2 = new System.Random().Next(1, 50);
-                                                        typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-                                                        Vector3 asd = (targetheli() - projectile.currentPosition).normalized;
-                                                        Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
-                                                        projectile.currentVelocity = vector2;
-                                                    }
+
                                                 }
                                             }
+                                            if (result != null && result.IsAlive() && !result.IsLocalPlayer())
+                                            {
+
+
+                                                    int randomSpot6 = new System.Random().Next(1, 55);
+                                                    typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, randomSpot6);
+
+                                                    if (menu.ф)
+                                                    {
+                                                        projectile.thickness = 0f;
+                                                    }
+                                                    else
+                                                    {
+                                                        projectile.thickness = 100f;
+                                                    }
+                                                    projectile.InitializeVelocity(Vector3.down); Vector3.Distance(MainCamera.mainCamera.transform.position, menu.ф ? result.model.rootBone.transform.position : result.model.headBone.transform.position + new Vector3(0f, 0.05f, 0f));
+                                                    typeof(Projectile).GetField("currentPosition", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, menu.ф ? result.model.rootBone.transform.position : result.model.headBone.transform.position + new Vector3(0f, 0.05f, 0f));
+                                                    typeof(Projectile).GetField("currentVelocity", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, Vector3.down * 3000f);
+                                                    projectile.transform.position = Vector3.Lerp(projectile.transform.position, menu.ф ? result.model.rootBone.transform.position : result.model.headBone.transform.position + new Vector3(0f, 0.05f, 0f), Vector3.Distance(projectile.transform.position, menu.ф ? result.model.rootBone.transform.position : result.model.headBone.transform.position + new Vector3(0f, 0.05f, 0f) * Time.deltaTime));
+                                                
+                                            }
+                                        }
+                                    }
+                                    int targetdistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.target());
+                                    int targetdistance2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.targetheli());
+                                    int targetdistance3 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.giva());
+                                    if (menu.zalypa)
+                                    {
+                                        System.Random rand = new System.Random();
+                                        projectile.traveledDistance = rand.Next(1000, 999999999);
+                                    }
+                                    if (menu.zalypa1)
+                                    {
+                                        System.Random rand = new System.Random();
+                                        projectile.traveledDistance = rand.Next(1, 1);
+                                    }
+                                    int projectiledistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, projectile.currentPosition);
+
+                                    if (UnityEngine.Input.GetKey(KeyCode.X))
+                                    {
+
+                                        if (projectile.isAlive && projectile.isAuthoritative)
+                                        {
+
+
+                                            if (CFG.Misc.cahh)
+                                            {
+
+                                                Vector3 asd = (target() - projectile.currentPosition).normalized;
+                                                Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
+                                                projectile.currentVelocity = vector2;
+                                            }
+                                            if (CFG.Aimbot.qewqefdsf)
+                                            {
+                                                Vector3 asd = (giva() - projectile.currentPosition).normalized;
+                                                Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
+                                                projectile.currentVelocity = vector2;
+                                            }
+                                            if (CFG.Aimbot.BulletDropPrediction)
+                                            {
+                                                Vector3 asd = (targetheli() - projectile.currentPosition).normalized;
+                                                Vector3 vector2 = asd * itemmodproj.GetRandomVelocity();
+                                                projectile.currentVelocity = vector2;
+                                            }
+
+
                                         }
                                     }
                                 }
                             }
+
                         }
+                    }
 
-                        BaseProjectile bp = LocalPlayer.Entity.GetHeldEntity().GetComponent<BaseProjectile>();
+                    BaseProjectile bp = LocalPlayer.Entity.GetHeldEntity().GetComponent<BaseProjectile>();
 
-                        if (LocalPlayer.Entity != null && BaseEntityEx.IsValid(bp))
+                    if (BaseEntityEx.IsValid(bp))
+                    {
+                        if (HeldShits is BaseProjectile)
                         {
-                            if (HeldShits is BaseProjectile)
+                            ItemDefinition bp1 = bp.primaryMagazine.ammoType;
+
+                            if (bp1 != null)
                             {
-                                ItemDefinition bp1 = bp.primaryMagazine.ammoType;
+                                ItemModProjectile test = bp1.GetComponent<ItemModProjectile>();
 
-                                if (bp1 != null)
+                                if (test != null)
                                 {
-                                    ItemModProjectile test = bp1.GetComponent<ItemModProjectile>();
+                                    int targetdistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.target());
+                                    int targetdistance2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.targetheli());
 
-                                    if (test != null)
+                                    int targetdistanceheli2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.giva());
+
+                                    int projectiledistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, projectile.currentPosition);
+
+                                    if (UnityEngine.Input.GetKey(KeyCode.X))
                                     {
-                                        int targetdistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.target());
-
-                                        int targetdistanceheli = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.tank());
-                                        int targetdistance2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.targetheli());
-
-                                        int targetdistanceheli2 = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, HACK.giva());
-
-                                        int projectiledistance = (int)Vector3.Distance(MainCamera.mainCamera.transform.position, projectile.currentPosition);
-
-                                        if (UnityEngine.Input.GetKey(KeyCode.X))
+                                        if (CFG.Misc.cahh)
                                         {
-                                            if (CFG.Setting.cahh)
-                                            {
-                                                int randomSpot = new System.Random().Next(199, 999999999);
-                                                int randomSpot2 = new System.Random().Next(1, 50);
-                                                typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-                                                Vector3 asd = (target() - projectile.currentPosition).normalized;
-                                                Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
-                                                projectile.currentVelocity = vector2;
-                                            }
-                                            if (CFG.Setting.dfertwdf)
-                                            {
-                                                int randomSpot = new System.Random().Next(199, 999999999);
-                                                int randomSpot2 = new System.Random().Next(1, 50);
-                                                typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-                                                Vector3 asd = (tank() - projectile.currentPosition).normalized;
-                                                Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
-                                                projectile.currentVelocity = vector2;
-                                            }
+                                            Vector3 asd = (target() - projectile.currentPosition).normalized;
+                                            Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
+                                            projectile.currentVelocity = vector2;
+                                        }
 
-                                            if (CFG.Setting.qewqefdsf)
-                                            {
-                                                int randomSpot = new System.Random().Next(199, 999999999);
-                                                int randomSpot2 = new System.Random().Next(1, 50);
-                                                typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, CFG.Setting.gggggg ? randomSpot : randomSpot2);
-                                                Vector3 asd = (giva() - projectile.currentPosition).normalized;
-                                                Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
-                                                projectile.currentVelocity = vector2;
-                                            }
-                                            if (CFG.Setting.BulletDropPrediction)
-                                            {
-                                                typeof(Projectile).GetField("traveledDistance", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(projectile, 0f);
-                                                Vector3 asd = (targetheli() - projectile.currentPosition).normalized;
-                                                Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
-                                                projectile.currentVelocity = vector2;
-                                            }
+
+                                        if (CFG.Aimbot.qewqefdsf)
+                                        {
+                                            Vector3 asd = (giva() - projectile.currentPosition).normalized;
+                                            Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
+                                            projectile.currentVelocity = vector2;
+                                        }
+                                        if (CFG.Aimbot.BulletDropPrediction)
+                                        {
+                                            Vector3 asd = (targetheli() - projectile.currentPosition).normalized;
+                                            Vector3 vector2 = asd * test.GetRandomVelocity() * bp.projectileVelocityScale;
+                                            projectile.currentVelocity = vector2;
                                         }
                                     }
                                 }
-
-
                             }
                         }
                     }
+                
                 }
             }
+
+
         }
+
+
     }
     private void UpdateTrampoline()
     {
@@ -2525,25 +2156,61 @@ public class HACK : MonoBehaviour
     public void SendProjectileAttack(PlayerProjectileAttack attack)
     {
 
-
-        if (CFG.Setting.qewqefdsf)
-        {
-            foreach (BaseNpc b in BaseNpc.VisibleNpcList)
-            {
+        if (UnityEngine.Input.GetKey(KeyCode.X) && CFG.Aimbot.BulletDropPrediction)
+        { foreach (BaseHelicopter b in companent.heli1)
                 if (b != null)
                 {
-
-                    attack.playerAttack.attack.hitBone = 698017942;
-
-                    attack.hitDistance = 0f;
+                    if (b.health > 5000)
+                    {
+                        attack.playerAttack.attack.hitBone = 566410933;
+                    }
+                    else
+                    {
+                        attack.playerAttack.attack.hitBone = 621403276;
+                    }
                     attack.playerAttack.attack.hitID = b.net.ID;
                     attack.playerAttack.attack.hitPositionLocal = new Vector3(0.9f, -0.4f, 0.1f);
                     attack.playerAttack.attack.hitNormalLocal = new Vector3(0.9f, -0.4f, 0.1f);
-                    LocalPlayer.Entity.ServerRPC<PlayerProjectileAttack>("OnProjectileAttack", attack);
+                    LocalPlayer.Entity.ServerRPC("OnProjectileAttack", attack, null, null, null, null);
                 }
-            }
         }
-        bool enabled1113 = CFG.Setting.heli;
+        if (menu.heli)
+        {
+            foreach (BaseHelicopter b in companent.heli1)
+                if (b != null)
+                {
+                    if (b.health > 5000)
+                    {
+                        attack.playerAttack.attack.hitBone = 566410933;
+                    }
+                    else
+                    {
+                        attack.playerAttack.attack.hitBone = 621403276;
+                    }
+                    attack.playerAttack.attack.hitID = b.net.ID;
+                    attack.playerAttack.attack.hitPositionLocal = new Vector3(0.9f, -0.4f, 0.1f);
+                    attack.playerAttack.attack.hitNormalLocal = new Vector3(0.9f, -0.4f, 0.1f);
+                    LocalPlayer.Entity.ServerRPC("OnProjectileAttack", attack, null, null, null, null);
+                }
+        }
+        if (menu.garss1)
+        {
+            foreach (BuildingPrivlidge b in companent.tcshit)
+                if (b != null && !b.IsDead())
+                {
+                    int lock_distance = (int)Vector3.Distance(LocalPlayer.Entity.transform.position, b.transform.position);
+                    if (lock_distance <= 50f)
+                    {
+                        attack.playerAttack.attack.hitBone = 0;
+
+                        attack.playerAttack.attack.hitID = b.net.ID;
+                        attack.playerAttack.attack.hitPositionLocal = new Vector3(0.9f, -0.4f, 0.1f);
+                        attack.playerAttack.attack.hitNormalLocal = new Vector3(0.9f, -0.4f, 0.1f);
+                        LocalPlayer.Entity.ServerRPC("OnProjectileAttack", attack, null, null, null, null);
+                    }
+                }
+        }
+        bool enabled1113 = menu.heli;
         if (enabled1113)
         {
             foreach (BaseHelicopter b in companent.heli1)
@@ -2559,7 +2226,7 @@ public class HACK : MonoBehaviour
                         attack.playerAttack.attack.hitPositionLocal = new Vector3(0.9f, -0.4f, 0.1f);
                         attack.playerAttack.attack.hitNormalLocal = new Vector3(0.9f, -0.4f, 0.1f);
 
-                        Effect.client.Run(CFG.Setting.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/hit_notify.prefab", LocalPlayer.Entity.eyes.gameObject);
+                        Effect.client.Run(CFG.Aimbot.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/hit_notify.prefab", LocalPlayer.Entity.eyes.gameObject);
                     }
                     else
                     {
@@ -2571,236 +2238,216 @@ public class HACK : MonoBehaviour
                         attack.playerAttack.attack.hitPositionWorld = LocalPlayer.Entity.transform.position;
                         attack.playerAttack.attack.pointStart = LocalPlayer.Entity.transform.position;
                         attack.playerAttack.attack.pointEnd = LocalPlayer.Entity.transform.position;
-                        Effect.client.Run(CFG.Setting.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/hit_notify.prefab", LocalPlayer.Entity.eyes.gameObject);
+                        Effect.client.Run(CFG.Aimbot.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/hit_notify.prefab", LocalPlayer.Entity.eyes.gameObject);
                     }
                 }
             }
         }
-        if (CFG.Setting.heli)
-        {
-            foreach (BaseHelicopter b in companent.heli1)
-            {
-                if (b != null)
-                {
-                    if (b.health > 5000)
-                    {
-                        attack.playerAttack.attack.hitBone = 566410933;
-                    }
-                    else
-                    {
-                        attack.playerAttack.attack.hitBone = 621403276;
-                    }
-                    attack.hitDistance = 0f;
-                    attack.playerAttack.attack.hitID = b.net.ID;
-                    attack.playerAttack.attack.hitPositionLocal = new Vector3(0.9f, -0.4f, 0.1f);
-                    attack.playerAttack.attack.hitNormalLocal = new Vector3(0.9f, -0.4f, 0.1f);
-                    LocalPlayer.Entity.ServerRPC<PlayerProjectileAttack>("OnProjectileAttack", attack);
-                }
-            }
-        }
-        if (UnityEngine.Input.GetKey(KeyCode.X) && CFG.Setting.BulletDropPrediction)
-        {
-            foreach (BaseHelicopter baseHelicopter in companent.heli1)
-            {
-                if (baseHelicopter != null)
-                {
-                    if (baseHelicopter.health > 5000f)
-                    {
-                        attack.playerAttack.attack.hitBone = 566410933U;
-                    }
-                    else
-                    {
-                        attack.playerAttack.attack.hitBone = 621403276U;
-                    }
-                    attack.hitDistance = 0f;
-                    attack.playerAttack.attack.hitID = baseHelicopter.net.ID;
-                    attack.playerAttack.attack.hitPositionLocal = new Vector3(0.9f, -0.4f, 0.1f);
-                    attack.playerAttack.attack.hitNormalLocal = new Vector3(0.9f, -0.4f, 0.1f);
-                    LocalPlayer.Entity.ServerRPC<PlayerProjectileAttack>("OnProjectileAttack", attack);
-                }
-            }
-        }
-        if (CFG.Setting.uytgff)
+
+        
+
+
+
+
+
+        if (CFG.Aimbot.uytgff)
         {
             if (LocalPlayer.Entity != null)
             {
-                global::BasePlayer basePlayer = null;
-                Vector2 a = new Vector2(Screen.width / 2, Screen.height / 2);
+                BasePlayer result = null;
+                Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
                 float num = 7000f;
-                foreach (global::BasePlayer basePlayer2 in global::BasePlayer.VisiblePlayerList)
+                foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
                 {
-                    if (!CFG.Setting.friendsList.Contains(basePlayer2.userID) && basePlayer2 != null && !basePlayer2.IsLocalPlayer() && !basePlayer2.IsDead())
+                    if (!friend.friendsList.Contains(basePlayer.userID) && basePlayer != null && !basePlayer.IsLocalPlayer() && !basePlayer.IsDead())
                     {
-                        Vector3 position = basePlayer2.model.headBone.transform.position;
-                        if (!(position == Vector3.zero))
+                        Vector3 positionBone = basePlayer.model.headBone.transform.position;
+
+                        if (!(positionBone == Vector3.zero))
                         {
-                            Vector3 vector = MainCamera.mainCamera.WorldToScreenPoint(position);
-                            if (vector.z > 0f)
+                            Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
+                            if (vector2.z > 0f)
                             {
-                                Vector2 b = new Vector2(vector.x, Screen.height - vector.y);
-                                float num2 = Mathf.Abs(Vector2.Distance(a, b));
-                                if (num2 <= CFG.Setting.fov1 && num2 < num)
+                                Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
+                                float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
+                                if (num2 <= menu.fov1 && num2 < num)
                                 {
                                     num = num2;
-                                    basePlayer = basePlayer2;
+                                    result = basePlayer;
                                 }
                             }
                         }
+
                     }
                 }
-                if (basePlayer != null && basePlayer.IsAlive() && !basePlayer.IsLocalPlayer())
+                if (result != null && result.IsAlive() && !result.IsLocalPlayer())
                 {
-                    Vector3 position2 = basePlayer.transform.position;
-                    Vector3 ptr = MainCamera.mainCamera.WorldToScreenPoint(position2);
-                    Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(position2 + new Vector3(0f, 1.7f, 0f));
+                    Vector3 position = result.transform.position;
+                    Vector3 ptr = MainCamera.mainCamera.WorldToScreenPoint(position);
+                    Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(position + new Vector3(0f, 1.7f, 0f));
                     Mathf.Abs(ptr.y - vector2.y);
-                    if (MainCamera.mainCamera.WorldToScreenPoint(basePlayer.transform.position).z > 0f)
+                    if (MainCamera.mainCamera.WorldToScreenPoint(result.transform.position).z > 0f)
                     {
-                        int num3 = new System.Random().Next(199, 999999999);
-                        int num4 = new System.Random().Next(1, 50);
-                        attack.hitDistance = CFG.Setting.gggggg ? num3 : num4;
-                        attack.playerAttack.attack.hitID = basePlayer.net.ID;
-                        attack.playerAttack.attack.hitBone = (CFG.Setting.fdsfdsfew ? 3399023664U : 3198432U);
-                        attack.playerAttack.attack.hitPartID = (CFG.Setting.fdsfdsfew ? 1890214305U : 1744899316U);
+                        System.Random rand = new System.Random();
+                        int randomSpot = rand.Next(1, 55);
+                        attack.hitDistance = randomSpot;
+                        attack.playerAttack.attack.hitID = result.net.ID; attack.playerAttack.attack.hitBone = (CFG.Aimbot.fdsfdsfew ? 3399023664U : 3198432U);
+                        attack.playerAttack.attack.hitPartID = (CFG.Aimbot.fdsfdsfew ? 1890214305U : 1744899316U);
                         attack.playerAttack.attack.hitPositionLocal = new Vector3(-0.1f, -0.1f, 0f);
                         attack.playerAttack.attack.hitNormalLocal = new Vector3(0f, -1f, 0f);
-                        LocalPlayer.Entity.ServerRPC<PlayerProjectileAttack>("OnProjectileAttack", attack);
-                        Effect.client.Run(CFG.Setting.fdsfdsfew ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
+                        LocalPlayer.Entity.ServerRPC("OnProjectileAttack", attack,null,null,null,null);
+                        Effect.client.Run(CFG.Aimbot.fdsfdsfew ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject) ;
                     }
                 }
             }
             if (LocalPlayer.Entity != null)
             {
-                global::BasePlayer basePlayer3 = null;
-                Vector2 a2 = new Vector2(Screen.width / 2, Screen.height / 2);
-                float num5 = 7000f;
-                foreach (global::BasePlayer basePlayer4 in global::BasePlayer.VisiblePlayerList)
+                BasePlayer result = null;
+                Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
+                float num = 7000f;
+                foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
                 {
-                    if (!CFG.Setting.friendsList.Contains(basePlayer4.userID) && basePlayer4 != null && !basePlayer4.IsLocalPlayer() && !basePlayer4.IsDead())
+                    if (!friend.friendsList.Contains(basePlayer.userID) && basePlayer != null && !basePlayer.IsLocalPlayer()  && !basePlayer.IsDead())
                     {
-                        Vector3 position3 = basePlayer4.model.headBone.transform.position;
-                        if (!(position3 == Vector3.zero))
+                        Vector3 positionBone = basePlayer.model.headBone.transform.position;
+
+                        if (!(positionBone == Vector3.zero))
                         {
-                            Vector3 vector3 = MainCamera.mainCamera.WorldToScreenPoint(position3);
-                            if (vector3.z > 0f)
+                            Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
+                            if (vector2.z > 0f)
                             {
-                                Vector2 b2 = new Vector2(vector3.x, Screen.height - vector3.y);
-                                float num6 = Mathf.Abs(Vector2.Distance(a2, b2));
-                                if (num6 <= CFG.Setting.fov1 && num6 < num5)
+                                Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
+                                float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
+                                if (num2 <= menu.fov1 && num2 < num)
                                 {
-                                    num5 = num6;
-                                    basePlayer3 = basePlayer4;
+                                    num = num2;
+                                    result = basePlayer;
                                 }
                             }
                         }
+
                     }
                 }
-                if (basePlayer3 != null && !basePlayer3.IsLocalPlayer() && !basePlayer3.IsDead())
+                if (result != null && !result.IsLocalPlayer() && !result.IsDead())
                 {
-                    Vector3 position4 = basePlayer3.transform.position;
-                    Vector3 ptr2 = MainCamera.mainCamera.WorldToScreenPoint(position4);
-                    Vector3 vector4 = MainCamera.mainCamera.WorldToScreenPoint(position4 + new Vector3(0f, 1.7f, 0f));
+                    Vector3 position2 = result.transform.position;
+                    Vector3 ptr2 = MainCamera.mainCamera.WorldToScreenPoint(position2);
+                    Vector3 vector4 = MainCamera.mainCamera.WorldToScreenPoint(position2 + new Vector3(0f, 1.7f, 0f));
                     Mathf.Abs(ptr2.y - vector4.y);
-                    if (MainCamera.mainCamera.WorldToScreenPoint(HACK.localplayer.transform.position).z > 0f)
+                    if (MainCamera.mainCamera.WorldToScreenPoint(localplayer.transform.position).z > 0f)
                     {
-                        int num7 = new System.Random().Next(199, 999999999);
-                        int num8 = new System.Random().Next(1, 50);
-                        attack.hitDistance = CFG.Setting.gggggg ? num7 : num8;
-                        attack.playerAttack.attack.hitID = basePlayer3.net.ID;
-                        attack.playerAttack.attack.hitBone = (CFG.Setting.fdsfdsfew ? 3399023664U : 3198432U);
-                        attack.playerAttack.attack.hitPartID = (CFG.Setting.fdsfdsfew ? 1890214305U : 1744899316U);
+                        System.Random rand = new System.Random();
+                        int randomSpot = rand.Next(1, 55);
+                        attack.hitDistance = randomSpot;
+                        attack.playerAttack.attack.hitID = result.net.ID; attack.playerAttack.attack.hitBone = (CFG.Aimbot.fdsfdsfew ? 3399023664U : 3198432U);
+                        attack.playerAttack.attack.hitPartID = (CFG.Aimbot.fdsfdsfew ? 1890214305U : 1744899316U);
                         attack.playerAttack.attack.hitPositionLocal = new Vector3(-0.1f, -0.1f, 0f);
                         attack.playerAttack.attack.hitNormalLocal = new Vector3(0f, -1f, 0f);
-                        LocalPlayer.Entity.ServerRPC<PlayerProjectileAttack>("OnProjectileAttack", attack);
-                        Effect.client.Run(CFG.Setting.fdsfdsfew ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
+                        LocalPlayer.Entity.ServerRPC("OnProjectileAttack", attack,null,null,null,null);
+                        Effect.client.Run(CFG.Aimbot.fdsfdsfew ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
+                    
                     }
                 }
             }
         }
-        if (CFG.Setting.ssddd)
+
+            bool enabled113 = CFG.Aimbot.ssddd;
+        if (enabled113)
         {
-            global::BasePlayer basePlayer5 = null;
-            Vector2 a3 = new Vector2(Screen.width / 2, Screen.height / 2);
-            float num9 = 7000f;
-            foreach (global::BasePlayer basePlayer6 in global::BasePlayer.VisiblePlayerList)
+            BasePlayer result = null;
+            Vector2 vector = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
+            float num = 7000f;
+            foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
             {
-                if (!CFG.Setting.friendsList.Contains(basePlayer6.userID) && basePlayer6 != null && !basePlayer6.IsLocalPlayer() && !basePlayer6.IsDead())
+                if (!friend.friendsList.Contains(basePlayer.userID) && basePlayer != null && !basePlayer.IsLocalPlayer() && !basePlayer.IsDead())
                 {
-                    Vector3 position5 = basePlayer6.model.headBone.transform.position;
-                    if (!(position5 == Vector3.zero))
+                    Vector3 positionBone = basePlayer.model.headBone.transform.position;
+
+                    if (!(positionBone == Vector3.zero))
                     {
-                        Vector3 vector5 = MainCamera.mainCamera.WorldToScreenPoint(position5);
-                        if (vector5.z > 0f)
+                        Vector3 vector2 = MainCamera.mainCamera.WorldToScreenPoint(positionBone);
+                        if (vector2.z > 0f)
                         {
-                            Vector2 b3 = new Vector2(vector5.x, Screen.height - vector5.y);
-                            float num10 = Mathf.Abs(Vector2.Distance(a3, b3));
-                            if (num10 <= CFG.Setting.fov1 && num10 < num9)
+                            Vector2 vector3 = new Vector2(vector2.x, (float)Screen.height - vector2.y);
+                            float num2 = Mathf.Abs(Vector2.Distance(vector, vector3));
+                            if (num2 <= menu.fov1 && num2 < num)
                             {
-                                num9 = num10;
-                                basePlayer5 = basePlayer6;
+                                num = num2;
+                                result = basePlayer;
                             }
                         }
                     }
+
                 }
             }
-            if (LocalPlayer.Entity != null && basePlayer5 != null && attack != null && !basePlayer5.IsWounded() && !basePlayer5.IsLocalPlayer())
+            bool flag18 = LocalPlayer.Entity != null && result != null && attack != null && !result.IsWounded() && !result.IsLocalPlayer();
+            if (flag18)
             {
-                if (Vector3.Distance(LocalPlayer.Entity.transform.position, basePlayer5.transform.position) > 2f)
+                bool flag19 = Vector3.Distance(LocalPlayer.Entity.transform.position, result.transform.position) > 2f;
+                if (flag19)
                 {
-                    int num11 = new System.Random().Next(199, 999999999);
-                    int num12 = new System.Random().Next(1, 50);
-                    attack.hitDistance = CFG.Setting.gggggg ? num11 : num12;
-                    attack.playerAttack.attack.hitID = basePlayer5.net.ID;
-                    attack.playerAttack.attack.hitBone = (CFG.Setting.cbvcbcd ? 3399023664U : 3198432U);
-                    attack.playerAttack.attack.hitPartID = (CFG.Setting.cbvcbcd ? 1890214305U : 1744899316U);
+                    System.Random rand = new System.Random();
+                    int randomSpot = rand.Next(1, 55);
+                    attack.hitDistance = randomSpot;
+                    attack.playerAttack.attack.hitID = result.net.ID;
+                    attack.playerAttack.attack.hitBone = (CFG.Aimbot.cbvcbcd ? 3399023664U : 3198432U);
+                    attack.playerAttack.attack.hitPartID = (CFG.Aimbot.cbvcbcd ? 1890214305U : 1744899316U);
                     attack.playerAttack.attack.hitItem = 0U;
                     attack.playerAttack.attack.hitPositionLocal = new Vector3(-0.1f, -0.1f, 0f);
                     attack.playerAttack.attack.hitNormalLocal = new Vector3(0f, -1f, 0f);
-                    attack.playerAttack.attack.hitPositionWorld = basePlayer5.FindBone("head").position;
-                    Effect.client.Run(CFG.Setting.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
+                    attack.playerAttack.attack.hitPositionWorld = result.FindBone("head").position;
+
+                    Effect.client.Run(CFG.Aimbot.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
                 }
                 else
                 {
-                    int num13 = new System.Random().Next(199, 999999999);
-                    int num14 = new System.Random().Next(1, 50);
-                    attack.hitDistance = CFG.Setting.gggggg ? num13 : num14;
-                    attack.playerAttack.attack.hitID = basePlayer5.net.ID;
-                    attack.playerAttack.attack.hitBone = (CFG.Setting.cbvcbcd ? 3399023664U : 3198432U);
-                    attack.playerAttack.attack.hitPartID = (CFG.Setting.cbvcbcd ? 1890214305U : 1744899316U);
+                    System.Random rand = new System.Random();
+                    int randomSpot = rand.Next(1, 55);
+                    attack.hitDistance = randomSpot;
+                    attack.playerAttack.attack.hitID = result.net.ID;
+                    attack.playerAttack.attack.hitBone = (CFG.Aimbot.cbvcbcd ? 3399023664U : 3198432U);
+                    attack.playerAttack.attack.hitPartID = (CFG.Aimbot.cbvcbcd ? 1890214305U : 1744899316U);
                     attack.playerAttack.attack.hitItem = 0U;
                     attack.playerAttack.attack.hitPositionLocal = new Vector3(-0.1f, -0.1f, 0f);
                     attack.playerAttack.attack.hitNormalLocal = new Vector3(0f, -1f, 0f);
                     attack.playerAttack.attack.hitPositionWorld = LocalPlayer.Entity.transform.position;
                     attack.playerAttack.attack.pointStart = LocalPlayer.Entity.transform.position;
                     attack.playerAttack.attack.pointEnd = LocalPlayer.Entity.transform.position;
-                    Effect.client.Run(CFG.Setting.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
+                    Effect.client.Run(CFG.Aimbot.cbvcbcd ? "assets/bundled/prefabs/fx/hit_notify.prefab" : "assets/bundled/prefabs/fx/headshot_2d.prefab", LocalPlayer.Entity.eyes.gameObject);
                 }
             }
-        }
-        LocalPlayer.Entity.ServerRPC<PlayerProjectileAttack>("OnProjectileAttack", attack);
+            
 
+
+
+
+
+
+
+
+
+
+
+        
+
+
+        }
+
+        LocalPlayer.Entity.ServerRPC("OnProjectileAttack", attack,null,null,null,null);
+       
     }
     private static global::BuildingPrivlidge targ;
-    public static BaseHelicopter localheli;
+    private static global::BaseNPC targ1;
     public static BasePlayer localplayer; public static Vector3 ClampAngles(Vector3 angles)
     {
         if (angles.x > 89f)
-        {
             angles.x -= 360f;
-        }
         else if (angles.x < -89f)
-        {
             angles.x += 360f;
-        }
-
         if (angles.y > 180f)
-        {
             angles.y -= 360f;
-        }
         else if (angles.y < -180f)
-        {
             angles.y += 360f;
-        }
 
         angles.z = 0f;
         return angles;

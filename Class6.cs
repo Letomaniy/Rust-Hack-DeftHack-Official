@@ -11,14 +11,14 @@ using UnityEngine;
 			BasePlayer result = null;
 			new Vector2((float)Screen.width / 2f, (float)Screen.height / 2f);
 			float num = 1000f;
-			foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+			foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
 			{
-				if (!(basePlayer == null) && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !CFG.Setting.friendsList.Contains(basePlayer.userID) && !basePlayer.IsDead())
+				if (!(basePlayer == null) && !basePlayer.IsLocalPlayer() && basePlayer.health > 0f && !friend.friendsList.Contains(basePlayer.userID) && !basePlayer.IsDead())
 				{
 					Vector3 vector = MainCamera.mainCamera.WorldToScreenPoint(basePlayer.transform.position);
 					new Vector2(vector.x, (float)Screen.height - vector.y);
 					float num2 = Mathf.Abs(Vector2.Distance(new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2)), new Vector2(vector.x, (float)Screen.height - vector.y)));
-					if (num2 <= (float)CFG.Setting.fov && num2 < num && basePlayer.IsAlive())
+					if (num2 <= (float)menu.fov && num2 < num && basePlayer.IsAlive())
 					{
 						num = num2;
 						result = basePlayer;
@@ -86,12 +86,12 @@ using UnityEngine;
 			Vector3 result = Vector3.zero;
 			Vector2 a = new Vector2((float)(Screen.width / 2), (float)(Screen.height / 2));
 			float num = 999f;
-			foreach (BasePlayer basePlayer in BasePlayer.VisiblePlayerList)
+			foreach (BasePlayer basePlayer in BasePlayer.visiblePlayerList)
 			{
-				if (!CFG.Setting.friendsList.Contains(basePlayer.userID) && !(basePlayer == null) && !basePlayer.IsLocalPlayer() && !basePlayer.IsSleeping() && basePlayer.health > 0f)
+				if (!friend.friendsList.Contains(basePlayer.userID) && !(basePlayer == null) && !basePlayer.IsLocalPlayer() && !basePlayer.IsSleeping() && basePlayer.health > 0f)
 				{
 					Vector3 bonePosition;
-					if (CFG.Setting.head)
+					if (aimbot.head)
 					{
 						bonePosition = aimbot.GetBonePosition(basePlayer.GetModel(), "headCenter") + new Vector3(0f, 0.05f, 0f);
 				}
@@ -106,7 +106,7 @@ using UnityEngine;
 						{
 							Vector2 b = new Vector2(screenPos.x, (float)Screen.height - screenPos.y);
 							float num2 = Mathf.Abs(Vector2.Distance(a, b));
-							if (num2 <= (float)CFG.Setting.fov && num2 <= num)
+							if (num2 <= (float)menu.fov && num2 <= num)
 							{
 								result = bonePosition;
 								num = num2;

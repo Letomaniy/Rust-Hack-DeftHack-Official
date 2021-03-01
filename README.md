@@ -1,5 +1,5 @@
 # Rust-Hack-DeftHack-Official
-
+ 
 This source code is for pirated Rust. 
 You will not be able to use it on the licensed version of the game. 
 To get the DLL, you need to compile the code using Visual Studio.
